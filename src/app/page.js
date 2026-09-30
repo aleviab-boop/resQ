@@ -1,5 +1,6 @@
 import LocationBar from '@/components/LocationBar'
 import OfferCarousel from '@/components/OfferCarousel'
+import SearchBar from '@/components/SearchBar'
 import ServiceCard from '@/components/ServiceCard'
 import VideoCard from '@/components/VideoCard'
 import Link from 'next/link'
@@ -10,6 +11,15 @@ export default function Dashboard() {
     <div>
       <LocationBar />
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-10">
+
+        {/* Search bar */}
+        <SearchBar />
+
+        {/* Greeting */}
+        <div className="-mt-6">
+          <h1 className="text-2xl font-bold text-gray-900">Hello,</h1>
+          <p className="text-gray-500 text-sm mt-0.5">Welcome to Reliance resQ</p>
+        </div>
 
         {/* Offer Carousel */}
         <OfferCarousel />
