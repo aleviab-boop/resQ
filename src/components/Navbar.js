@@ -36,7 +36,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-navy sticky top-0 z-50 shadow-md">
+    <nav className="bg-sky sticky top-0 z-50 shadow-md">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-8">
         {/* Logo */}
         <Link href="/" className="flex-shrink-0">
