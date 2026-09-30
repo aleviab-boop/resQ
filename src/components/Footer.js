@@ -1,16 +1,31 @@
+import Link from 'next/link'
+
 export default function Footer() {
   const cols = [
     {
       title: 'Support',
-      links: ['FAQs', 'Useful videos and articles', 'Nearest service center', 'Contact Us'],
+      links: [
+        { label: 'FAQs', href: '/faq' },
+        { label: 'Useful videos and articles', href: '/articles' },
+        { label: 'Nearest service center', href: '/locate' },
+        { label: 'Contact Us', href: '/contact' },
+      ],
     },
     {
       title: 'Our Company',
-      links: ['About resQ', 'Connect with us', 'Download the App'],
+      links: [
+        { label: 'About resQ', href: '/about' },
+        { label: 'Connect with us', href: '/connect' },
+        { label: 'Download the App', href: '/download' },
+      ],
     },
     {
       title: 'Legal',
-      links: ['Terms & Conditions', 'Privacy Policy', 'Cookie Policy'],
+      links: [
+        { label: 'Terms & Conditions', href: '/terms' },
+        { label: 'Privacy Policy', href: '/privacy' },
+        { label: 'Cookie Policy', href: '/cookies' },
+      ],
     },
   ]
 
@@ -28,8 +43,10 @@ export default function Footer() {
             <h4 className="text-white font-bold text-sm mb-4 uppercase tracking-wide">{col.title}</h4>
             <ul className="space-y-2">
               {col.links.map((link) => (
-                <li key={link}>
-                  <button className="text-sm hover:text-white transition-colors text-left">{link}</button>
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm hover:text-white transition-colors">
+                    {link.label}
+                  </Link>
                 </li>
               ))}
             </ul>
