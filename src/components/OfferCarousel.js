@@ -1,60 +1,64 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { offerBanners } from '@/lib/data'
 
 export default function OfferCarousel() {
-  const [slide, setSlide] = useState(0)
-  const touchX = useRef(null)
+  // Show 2 banners at a time; slide by 2
+  const [startIdx, setStartIdx] = useState(0)
   const total = offerBanners.length
 
   useEffect(() => {
-    const timer = setInterval(() => setSlide(s => (s + 1) % total), 4500)
+    const timer = setInterval(() => {
+      setStartIdx(s => (s + 2) % total)
+    }, 5000)
     return () => clearInterval(timer)
   }, [total])
 
-  function handleTouchStart(e) { touchX.current = e.touches[0].clientX }
-  function handleTouchEnd(e) {
-    if (touchX.current === null) return
-    const dx = e.changedTouches[0].clientX - touchX.current
-    if (Math.abs(dx) > 40) setSlide(s => dx < 0 ? (s + 1) % total : (s - 1 + total) % total)
-    touchX.current = null
-  }
+  const left = offerBanners[startIdx % total]
+  const right = offerBanners[(startIdx + 1) % total]
+
+  function prev() { setStartIdx(s => (s - 2 + total) % total) }
+  function next() { setStartIdx(s => (s + 2) % total) }
 
   return (
-    <div className="relative overflow-hidden rounded-card shadow-card">
-      <div
-        className="flex carousel-track"
-        style={{ transform: `translateX(-${slide * 100}%)` }}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        {offerBanners.map((b, i) => (
-          <div key={i} className="min-w-full relative bg-white" style={{height:'220px'}}>
-            <img src={b.img} alt={b.label} style={{width:'100%',height:'100%',objectFit:'contain',objectPosition:'center'}} />
-          </div>
-        ))}
+    <section>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-lg font-bold text-gray-900">Offers</h2>
       </div>
+      <div className="relative">
+        <div className="grid grid-cols-2 gap-3">
+          {[left, right].map((b, i) => (
+            <div key={i} className="rounded-2xl overflow-hidden shadow-card bg-white" style={{height: '180px'}}>
+              <img
+                src={b.img}
+                alt={b.label}
+                style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center'}}
+              />
+            </div>
+          ))}
+        </div>
 
-      {/* Dots */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
-        {offerBanners.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setSlide(i)}
-            className={`rounded-full transition-all ${i === slide ? 'bg-white w-5 h-2' : 'bg-white/50 w-2 h-2'}`}
-          />
-        ))}
+        {/* Arrows */}
+        <button
+          onClick={prev}
+          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-8 h-8 flex items-center justify-center z-10"
+        >‹</button>
+        <button
+          onClick={next}
+          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-8 h-8 flex items-center justify-center z-10"
+        >›</button>
+
+        {/* Dots */}
+        <div className="flex justify-center gap-1.5 mt-2">
+          {Array.from({length: Math.ceil(total / 2)}).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setStartIdx(i * 2)}
+              className={`rounded-full transition-all ${Math.floor(startIdx / 2) === i ? 'bg-sky w-4 h-2' : 'bg-gray-300 w-2 h-2'}`}
+            />
+          ))}
+        </div>
       </div>
-
-      {/* Arrows */}
-      <button
-        onClick={() => setSlide(s => (s - 1 + total) % total)}
-        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-8 h-8 flex items-center justify-center"
-      >‹</button>
-      <button
-        onClick={() => setSlide(s => (s + 1) % total)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full w-8 h-8 flex items-center justify-center"
-      >›</button>
-    </div>
+    </section>
   )
 }
