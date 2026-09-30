@@ -10,8 +10,8 @@ module.exports = {
       colors: {
         navy: '#1E3A6E',
         'navy-dark': '#162E5A',
-        sky: '#3DA8DC',
-        'sky-light': '#EAF4FB',
+        sky: '#00A1E1',
+        'sky-light': '#E6F6FD',
         green: { resq: '#1A8A4A', light: '#E8F9F0' },
       },
       fontFamily: {
