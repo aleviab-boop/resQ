@@ -8,10 +8,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        navy: '#1E3A6E',
-        'navy-dark': '#162E5A',
-        sky: '#00A1E1',
-        'sky-light': '#E6F6FD',
+        navy: '#13347b',
+        'navy-dark': '#0f2860',
+        sky: '#00a1e1',
+        'sky-light': '#def6ff',
         green: { resq: '#1A8A4A', light: '#E8F9F0' },
       },
       fontFamily: {
