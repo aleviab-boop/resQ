@@ -11,7 +11,7 @@ export default function SearchBar() {
   function handleChange(e) {
     const q = e.target.value
     setQuery(q)
-    if (q.trim().length < 2) { setResults([]); return }
+    if (q.trim().length < 1) { setResults([]); return }
     const matches = allServices.filter(s =>
       s.name.toLowerCase().includes(q.toLowerCase())
     ).slice(0, 6)
@@ -34,6 +34,9 @@ export default function SearchBar() {
           type="text"
           value={query}
           onChange={handleChange}
+          onFocus={() => {
+            if (!query) setResults(allServices.slice(0, 6))
+          }}
           onBlur={() => setTimeout(() => setResults([]), 150)}
           placeholder="Search for a service (e.g. AC service, TV installation…)"
           className="flex-1 text-sm outline-none text-gray-800 placeholder-gray-400 bg-transparent"
@@ -44,7 +47,7 @@ export default function SearchBar() {
       </div>
 
       {results.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-100 rounded-xl shadow-lg z-50 overflow-hidden">
+        <ul className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-2xl z-[200] overflow-hidden">
           {results.map(s => (
             <li key={s.name}>
               <button
