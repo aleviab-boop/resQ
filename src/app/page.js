@@ -16,9 +16,9 @@ export default function Dashboard() {
         <SearchBar />
 
         {/* Greeting */}
-        <div className="-mt-6">
-          <h1 className="text-2xl font-bold text-gray-900">Hello,</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Welcome to Reliance resQ</p>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 leading-tight">Hello,<br />Welcome to Reliance resQ</h1>
+          <p className="text-gray-500 text-sm mt-2">Your trusted expert for complete electronics care.</p>
         </div>
 
         {/* Offer Carousel */}

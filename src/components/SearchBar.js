@@ -26,7 +26,7 @@ export default function SearchBar() {
 
   return (
     <div className="relative w-full">
-      <div className="flex items-center bg-white border border-gray-200 rounded-xl shadow-sm px-4 py-3 gap-3 focus-within:border-sky transition">
+      <div className="flex items-center bg-white border border-gray-200 rounded-full shadow-sm px-5 py-3.5 gap-3 focus-within:border-sky transition">
         <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
         </svg>
@@ -38,7 +38,7 @@ export default function SearchBar() {
             if (!query) setResults(allServices.slice(0, 6))
           }}
           onBlur={() => setTimeout(() => setResults([]), 150)}
-          placeholder="Search for a service (e.g. AC service, TV installation…)"
+          placeholder={'Search "washing machine repair"'}
           className="flex-1 text-sm outline-none text-gray-800 placeholder-gray-400 bg-transparent"
         />
         {query && (
@@ -47,7 +47,7 @@ export default function SearchBar() {
       </div>
 
       {results.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-2xl z-[200] overflow-hidden">
+        <ul className="absolute left-0 right-0 top-full mt-2 bg-white border border-gray-200 rounded-2xl shadow-2xl z-[200] overflow-hidden">
           {results.map(s => (
             <li key={s.name}>
               <button
