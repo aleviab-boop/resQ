@@ -61,7 +61,7 @@ export default function AboutPage() {
             { icon: '⚡', title: 'Same-day Service', desc: 'We offer same-day and next-day slots in 200+ cities across India, 365 days a year.' },
             { icon: '🛡️', title: '30-day Warranty', desc: 'Every service comes with a 30-day service warranty. If the issue recurs, we fix it for free.' },
             { icon: '💳', title: 'Pay After Service', desc: 'No upfront payment required. Pay only after the service is completed to your satisfaction.' },
-            { icon: '📱', title: 'Real-time Tracking', desc: 'Track your technician's arrival in real-time via the app and receive live status updates.' },
+            { icon: '📱', title: 'Real-time Tracking', desc: "Track your technician's arrival in real-time via the app and receive live status updates." },
             { icon: '🏆', title: 'Reliance Backed', desc: 'Trusted by 10 million+ customers, backed by the reliability and scale of Reliance Industries.' },
           ].map(item => (
             <div key={item.title} className="bg-white rounded-2xl shadow-card p-5">

@@ -5,7 +5,7 @@ const ARTICLES = [
   { icon: '🫧', tag: 'Washing Machine', title: '5 signs your washing machine needs attention', read: '4 min read', desc: 'Unusual noises, bad odours, water leaks, or clothes coming out still dirty — these are early signs of a developing issue.' },
   { icon: '🧊', tag: 'Refrigerator', title: 'Why is your fridge not cooling properly?', read: '5 min read', desc: 'Dirty condenser coils, a faulty thermostat, or a worn door seal are the most common causes of refrigerator cooling issues.' },
   { icon: '📺', tag: 'LED TV', title: 'How to extend the life of your LED TV', read: '3 min read', desc: 'Keep brightness at 50–60%, clean the screen with a microfibre cloth, and ensure proper ventilation behind the unit.' },
-  { icon: '💧', tag: 'Water Purifier', title: 'When to replace your RO membrane', read: '4 min read', desc: 'Most RO membranes last 2–3 years. If your TDS level spikes or water flow slows down, it's time for a replacement.' },
+  { icon: '💧', tag: 'Water Purifier', title: 'When to replace your RO membrane', read: '4 min read', desc: "Most RO membranes last 2–3 years. If your TDS level spikes or water flow slows down, it's time for a replacement." },
   { icon: '🌬️', tag: 'Air Cooler', title: 'Maintaining your air cooler for the summer season', read: '3 min read', desc: 'Before summer begins, clean the cooling pads, flush the water tank, and check the pump to ensure peak performance.' },
 ]
 

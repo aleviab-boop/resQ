@@ -14,8 +14,8 @@ const FAQS = [
     category: 'Technicians',
     items: [
       { q: 'Are your technicians certified?', a: 'All resQ technicians are Reliance-certified, background-verified, and trained on the latest appliance models. They carry official resQ ID cards.' },
-      { q: 'Will I be notified when the technician is on the way?', a: 'Yes. You'll receive an SMS and in-app notification when the technician is assigned and again when they are en route to your location.' },
-      { q: 'What if I'm not satisfied with the service?', a: 'All our services come with a 30-day service warranty. If the issue persists, contact us within 30 days and we'll re-service at no extra cost.' },
+      { q: 'Will I be notified when the technician is on the way?', a: "Yes. You'll receive an SMS and in-app notification when the technician is assigned and again when they are en route to your location." },
+      { q: "What if I'm not satisfied with the service?", a: "All our services come with a 30-day service warranty. If the issue persists, contact us within 30 days and we'll re-service at no extra cost." },
     ],
   },
   {
