@@ -5,8 +5,7 @@ import { offerBanners } from '@/lib/data'
 export default function OfferCarousel() {
   const [slide, setSlide] = useState(0)
   const touchX = useRef(null)
-  // Each slide shows 2 banners; we loop through all banners one at a time
-  const total = offerBanners.length
+  const total = offerBanners.length   // 4 banners
 
   useEffect(() => {
     const timer = setInterval(() => setSlide(s => (s + 1) % total), 4500)
@@ -24,35 +23,57 @@ export default function OfferCarousel() {
     touchX.current = null
   }
 
-  const b1 = offerBanners[slide % total]
-  const b2 = offerBanners[(slide + 1) % total]
-
   return (
     <section>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-bold text-gray-900">Offers</h2>
-      </div>
+      <h2 className="text-lg font-bold text-gray-900 mb-3">Offers</h2>
 
       <div
         className="relative"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Two banners side by side with smooth fade transition */}
-        <div className="grid grid-cols-2 gap-3">
-          {[b1, b2].map((b, i) => (
-            <div
-              key={`${slide}-${i}`}
-              className="rounded-2xl overflow-hidden shadow-card bg-gray-50"
-              style={{ height: '180px' }}
-            >
-              <img
-                src={b.img}
-                alt={b.label}
-                style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center' }}
-              />
-            </div>
-          ))}
+        {/* Clipping wrapper */}
+        <div style={{ overflow: 'hidden', borderRadius: '16px' }}>
+          {/*
+            Track: total items each 50% of original container width.
+            Track total width = total * 50% of container.
+            To move by one item (= 50% of container), translate by (1/total)*100% of track.
+          */}
+          <div
+            style={{
+              display: 'flex',
+              width: `${total * 50}%`,
+              transform: `translateX(-${(slide / total) * 100}%)`,
+              transition: 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+            }}
+          >
+            {offerBanners.map((b, i) => (
+              <div
+                key={i}
+                style={{ width: `${100 / total}%`, flexShrink: 0, padding: '0 6px' }}
+              >
+                <div
+                  style={{
+                    height: '185px',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    background: '#f9fafb',
+                  }}
+                >
+                  <img
+                    src={b.img}
+                    alt={b.label}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      objectPosition: 'center',
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Left arrow */}
@@ -73,7 +94,9 @@ export default function OfferCarousel() {
             <button
               key={i}
               onClick={() => setSlide(i)}
-              className={`rounded-full transition-all ${slide === i ? 'bg-sky w-4 h-2' : 'bg-gray-300 w-2 h-2'}`}
+              className={`rounded-full transition-all duration-300 ${
+                slide === i ? 'bg-sky w-4 h-2' : 'bg-gray-300 w-2 h-2'
+              }`}
             />
           ))}
         </div>
