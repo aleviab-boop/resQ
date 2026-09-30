@@ -60,12 +60,15 @@ export default function MyBookingsPage() {
   const { user } = useAuth()
   const router = useRouter()
   const [tab, setTab] = useState('all')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
-    if (!user) router.push('/login')
-  }, [user, router])
+    if (mounted && !user) router.push('/login')
+  }, [mounted, user, router])
 
-  if (!user) return null
+  if (!mounted || !user) return null
 
   const filtered = tab === 'all' ? MOCK_BOOKINGS : MOCK_BOOKINGS.filter(b => b.status === tab)
 

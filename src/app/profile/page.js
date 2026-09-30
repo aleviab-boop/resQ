@@ -9,8 +9,13 @@ const ADDRESSES = [
 ]
 
 export default function ProfilePage() {
+  const [mounted, setMounted] = useState(false)
+  // mounted set below
   const { user, logout } = useAuth()
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
   const [addresses, setAddresses] = useState(ADDRESSES)
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState('')
@@ -20,7 +25,7 @@ export default function ProfilePage() {
     setName(user.name)
   }, [user, router])
 
-  if (!user) return null
+  if (!mounted || !user) return null
 
   function handleLogout() {
     logout()

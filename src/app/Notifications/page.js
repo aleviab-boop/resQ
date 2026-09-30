@@ -39,13 +39,16 @@ const MOCK_NOTIFS = [
 export default function NotificationsPage() {
   const { user } = useAuth()
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
   const [notifs, setNotifs] = useState(MOCK_NOTIFS)
 
   useEffect(() => {
     if (!user) router.push('/login')
   }, [user, router])
 
-  if (!user) return null
+  if (!mounted || !user) return null
 
   const unreadCount = notifs.filter(n => !n.read).length
 

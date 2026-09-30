@@ -7,13 +7,16 @@ import Link from 'next/link'
 export default function CartPage() {
   const { user, cart, removeFromCart } = useAuth()
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
   const [orderPlaced, setOrderPlaced] = useState(false)
 
   useEffect(() => {
     if (!user) router.push('/login')
   }, [user, router])
 
-  if (!user) return null
+  if (!mounted || !user) return null
 
   const subtotal = cart.reduce((sum, s) => {
     const num = parseInt(s.price.replace(/[^0-9]/g, ''))
