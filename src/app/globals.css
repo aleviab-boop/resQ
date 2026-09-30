@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #f5f7fa;
+  color: #1a1a2e;
+}
+
+/* Carousel */
+.carousel-track { transition: transform 0.45s cubic-bezier(.4,0,.2,1); }
+
+/* Video hover */
+.video-card video { transition: opacity 0.3s; }
+
+/* OTP inputs */
+.otp-input::-webkit-outer-spin-button,
+.otp-input::-webkit-inner-spin-button { -webkit-appearance: none; }
