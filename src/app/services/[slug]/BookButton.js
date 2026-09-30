@@ -1,25 +1,50 @@
 'use client'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
-export default function BookButton({ serviceName }) {
-  const { user } = useAuth()
+export default function BookButton({ service }) {
+  const { user, addToCart, cart } = useAuth()
   const router = useRouter()
+  const [added, setAdded] = useState(false)
 
-  function handleBook() {
+  const inCart = cart.some(s => s.name === service?.name)
+
+  function handleAddToCart() {
     if (!user) {
       router.push('/login')
-    } else {
-      alert(`Booking confirmed for "${serviceName}"!\nOur technician will contact you shortly.`)
+      return
     }
+    if (!inCart) {
+      addToCart(service)
+      setAdded(true)
+      setTimeout(() => setAdded(false), 2000)
+    }
+  }
+
+  function handleViewCart() {
+    router.push('/CartDetails')
+  }
+
+  if (inCart) {
+    return (
+      <button
+        onClick={handleViewCart}
+        className="w-full bg-sky text-white font-bold py-4 rounded-xl hover:bg-sky/90 transition text-base"
+      >
+        View Cart →
+      </button>
+    )
   }
 
   return (
     <button
-      onClick={handleBook}
-      className="w-full bg-navy text-white font-bold py-4 rounded-xl hover:bg-navy-dark transition text-base"
+      onClick={handleAddToCart}
+      className={`w-full font-bold py-4 rounded-xl transition text-base ${
+        added ? 'bg-green-500 text-white' : 'bg-navy text-white hover:bg-navy/90'
+      }`}
     >
-      Book now
+      {added ? '✓ Added to Cart' : 'Add to Cart'}
     </button>
   )
 }

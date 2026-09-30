@@ -63,7 +63,7 @@ export default function ServiceDetail({ params }) {
           <div className="bg-white rounded-2xl shadow-card p-6 space-y-4">
             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Service charges</div>
             <div className="text-4xl font-extrabold text-gray-900">{svc.price}</div>
-            <BookButton serviceName={svc.name} />
+            <BookButton service={svc} />
           </div>
 
           <div className="bg-white rounded-2xl shadow-card border border-gray-100 p-6">
