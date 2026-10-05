@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
 
@@ -48,67 +48,49 @@ function Stars({ rating }) {
   )
 }
 
-// Confetti burst — fixed overlay so it's always visible regardless of modal scroll/size
+// CSS-based confetti — no canvas sizing issues, works everywhere
+const CONFETTI_COLORS = ['#00a1e1','#13347b','#fbbf24','#34d399','#f87171','#a78bfa','#fb923c','#f472b6']
+const CONFETTI_PIECES = Array.from({ length: 60 }, (_, i) => ({
+  id: i,
+  color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+  left: Math.random() * 100,
+  delay: Math.random() * 0.6,
+  duration: 1.2 + Math.random() * 1.2,
+  size: 6 + Math.random() * 8,
+  rotate: Math.random() * 360,
+  isRect: Math.random() > 0.5,
+}))
+
 function Confetti() {
-  const canvasRef = useRef(null)
+  const [visible, setVisible] = useState(true)
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const W = window.innerWidth
-    const H = window.innerHeight
-    canvas.width = W
-    canvas.height = H
-    const ctx = canvas.getContext('2d')
-    const colors = ['#00a1e1', '#13347b', '#fbbf24', '#34d399', '#f87171', '#a78bfa', '#fb923c']
-    const particles = Array.from({ length: 100 }, () => ({
-      x: W / 2,
-      y: H / 2,
-      vx: (Math.random() - 0.5) * 18,
-      vy: (Math.random() - 1.2) * 14,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      size: Math.random() * 10 + 5,
-      rotation: Math.random() * 360,
-      rotationSpeed: (Math.random() - 0.5) * 10,
-      alpha: 1,
-      shape: Math.random() > 0.5 ? 'rect' : 'circle',
-    }))
-    let frame = 0
-    let raf
-    function animate() {
-      ctx.clearRect(0, 0, W, H)
-      particles.forEach(p => {
-        p.x += p.vx
-        p.y += p.vy
-        p.vy += 0.4
-        p.rotation += p.rotationSpeed
-        p.alpha -= 0.013
-        if (p.alpha <= 0) return
-        ctx.save()
-        ctx.globalAlpha = Math.max(0, p.alpha)
-        ctx.translate(p.x, p.y)
-        ctx.rotate((p.rotation * Math.PI) / 180)
-        ctx.fillStyle = p.color
-        if (p.shape === 'rect') {
-          ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2)
-        } else {
-          ctx.beginPath()
-          ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2)
-          ctx.fill()
-        }
-        ctx.restore()
-      })
-      frame++
-      if (frame < 150) raf = requestAnimationFrame(animate)
-    }
-    animate()
-    return () => cancelAnimationFrame(raf)
+    const t = setTimeout(() => setVisible(false), 3000)
+    return () => clearTimeout(t)
   }, [])
+  if (!visible) return null
   return (
-    <canvas
-      ref={canvasRef}
-      className="pointer-events-none"
-      style={{ position: 'fixed', top: 0, left: 0, zIndex: 9999 }}
-    />
+    <div className="pointer-events-none" style={{ position: 'fixed', inset: 0, zIndex: 99999, overflow: 'hidden' }}>
+      <style>{`
+        @keyframes confetti-fall {
+          0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+          80%  { opacity: 1; }
+          100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+      `}</style>
+      {CONFETTI_PIECES.map(p => (
+        <div key={p.id} style={{
+          position: 'absolute',
+          left: `${p.left}%`,
+          top: '-20px',
+          width: p.isRect ? `${p.size}px` : `${p.size * 0.7}px`,
+          height: p.isRect ? `${p.size * 0.45}px` : `${p.size * 0.7}px`,
+          borderRadius: p.isRect ? '2px' : '50%',
+          background: p.color,
+          animation: `confetti-fall ${p.duration}s ${p.delay}s ease-in forwards`,
+          transform: `rotate(${p.rotate}deg)`,
+        }} />
+      ))}
+    </div>
   )
 }
 
@@ -310,7 +292,38 @@ export default function BookingFlow({ service, onClose }) {
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl">×</button>
         </div>
 
-        <div className="px-6 py-5 space-y-4">
+        {/* Coupon strip — shown right at the top of step 3 */}
+        <div className="px-6 pt-4">
+          {appliedCoupon ? (
+            <div className="flex items-center justify-between bg-green-50 border-2 border-green-300 rounded-xl px-4 py-3 mb-1">
+              <div className="flex items-center gap-2">
+                <span className="text-green-600 font-bold">✓</span>
+                <div>
+                  <div className="text-xs font-bold text-green-700">{appliedCoupon.code}</div>
+                  <div className="text-xs text-green-600">{appliedCoupon.label}</div>
+                </div>
+              </div>
+              <button onClick={() => { setAppliedCoupon(null); setCouponCode('') }} className="text-xs text-red-400 font-semibold">Remove</button>
+            </div>
+          ) : (
+            <div className="flex gap-2 mb-1">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError('') }}
+                placeholder="🎟️ Have a coupon? Try RESQ50"
+                className="flex-1 border-2 border-dashed border-sky/40 bg-sky/5 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-sky font-mono tracking-wider"
+              />
+              <button onClick={applyCoupon} disabled={!couponCode.trim()}
+                className={`px-4 py-2.5 rounded-xl font-bold text-sm transition ${couponCode.trim() ? 'bg-sky text-white hover:bg-sky/90' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}>
+                Apply
+              </button>
+            </div>
+          )}
+          {couponError && <p className="text-xs text-red-500 mb-2">{couponError}</p>}
+        </div>
+
+        <div className="px-6 py-4 space-y-4">
           {/* Service summary */}
           <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
             <div className="flex items-center gap-3">
@@ -339,38 +352,6 @@ export default function BookingFlow({ service, onClose }) {
               <span>{address}</span>
               <button className="text-sky text-xs font-semibold ml-2 flex-shrink-0">Change</button>
             </div>
-          </div>
-
-          {/* Coupon code */}
-          <div>
-            <p className="text-sm font-semibold text-gray-700 mb-2">Promo / Coupon code</p>
-            {appliedCoupon ? (
-              <div className="flex items-center justify-between bg-green-50 border-2 border-green-300 rounded-xl px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-green-600 font-bold text-sm">✓</span>
-                  <div>
-                    <div className="text-xs font-bold text-green-700">{appliedCoupon.code}</div>
-                    <div className="text-xs text-green-600">{appliedCoupon.label}</div>
-                  </div>
-                </div>
-                <button onClick={() => { setAppliedCoupon(null); setCouponCode('') }} className="text-xs text-red-400 font-semibold hover:text-red-600">Remove</button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={couponCode}
-                  onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError('') }}
-                  placeholder="Enter code (try RESQ50)"
-                  className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-sky font-mono tracking-wider"
-                />
-                <button onClick={applyCoupon} disabled={!couponCode.trim()}
-                  className={`px-4 py-3 rounded-xl font-bold text-sm transition ${couponCode.trim() ? 'bg-sky text-white hover:bg-sky/90' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}>
-                  Apply
-                </button>
-              </div>
-            )}
-            {couponError && <p className="text-xs text-red-500 mt-1">{couponError}</p>}
           </div>
 
           {/* Price summary */}
