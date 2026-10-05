@@ -7,6 +7,18 @@ import RatingModal from '@/components/RatingModal'
 
 const MOCK_BOOKINGS = [
   {
+    id: 'BK2026005',
+    service: 'Double Door Refrigerator Cleaning',
+    appliance: 'Refrigerator',
+    date: 'Mon, 5 Oct 2026',
+    time: '12:00 PM – 2:00 PM',
+    address: '12, Sunset Residency, Lokhandwala, Mumbai',
+    status: 'live',
+    price: '₹189',
+    img: 'https://myjiostatic.cdn.jio.com/JPW/CDIT_Consumer/images/backend/compressed/DoubleDoorRefCleaning.webp',
+    tech: { name: 'Arjun Mehta', rating: 4.9, jobs: 521, phone: '+91 98200 77889', eta: 12 },
+  },
+  {
     id: 'BK2026001',
     service: 'Split AC Jet Service',
     appliance: 'Air Conditioner',
@@ -56,6 +68,7 @@ const MOCK_BOOKINGS = [
 ]
 
 const STATUS_CONFIG = {
+  live:      { label: '🔴 Live',    color: 'bg-red-100 text-red-600 animate-pulse' },
   upcoming:  { label: 'Upcoming',  color: 'bg-blue-100 text-blue-700' },
   completed: { label: 'Completed', color: 'bg-green-100 text-green-700' },
   cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-500' },
@@ -174,13 +187,32 @@ export default function MyBookingsPage() {
 
   useEffect(() => { setMounted(true) }, [])
   useEffect(() => { if (mounted && !user) router.push('/login') }, [mounted, user, router])
+  // Auto-open tracking for live booking
+  useEffect(() => {
+    if (mounted) {
+      const liveBooking = MOCK_BOOKINGS.find(b => b.status === 'live')
+      if (liveBooking) setTracking(liveBooking.id)
+    }
+  }, [mounted])
   if (!mounted || !user) return null
 
-  const filtered = tab === 'all' ? MOCK_BOOKINGS : MOCK_BOOKINGS.filter(b => b.status === tab)
+  const filtered = tab === 'all' ? MOCK_BOOKINGS : MOCK_BOOKINGS.filter(b => b.status === tab || (tab === 'upcoming' && b.status === 'live'))
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
       <h1 className="text-xl font-bold text-gray-900">My Bookings</h1>
+
+      {/* Live booking banner */}
+      {MOCK_BOOKINGS.some(b => b.status === 'live') && (
+        <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl p-4 flex items-center gap-3 animate-pulse">
+          <span className="text-2xl">🛵</span>
+          <div className="flex-1">
+            <div className="text-white font-extrabold text-sm">Technician is on the way!</div>
+            <div className="text-white/80 text-xs mt-0.5">Arjun Mehta · ETA ~12 min · Track live below</div>
+          </div>
+          <div className="w-2 h-2 bg-white rounded-full" />
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
@@ -232,7 +264,7 @@ export default function MyBookingsPage() {
               </div>
 
               {/* Tracking view (Q1 roadmap: dynamic tracking link) */}
-              {b.status === 'upcoming' && tracking === b.id && b.tech && (
+              {(b.status === 'upcoming' || b.status === 'live') && tracking === b.id && b.tech && (
                 <div className="px-4 pb-4 space-y-3">
                   <TrackingMap etaMinutes={b.tech.eta} />
                   {/* Technician card */}
@@ -257,12 +289,16 @@ export default function MyBookingsPage() {
               <div className="border-t border-gray-100 px-4 py-3 flex items-center justify-between">
                 <span className="text-sm font-bold text-navy">{b.price}</span>
                 <div className="flex gap-2">
-                  {b.status === 'upcoming' && (
+                  {(b.status === 'upcoming' || b.status === 'live') && (
                     <button
                       onClick={() => setTracking(tracking === b.id ? null : b.id)}
-                      className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 ${tracking === b.id ? 'bg-sky text-white' : 'border border-sky text-sky hover:bg-sky/10'}`}
+                      className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 ${
+                        b.status === 'live'
+                          ? 'bg-red-500 text-white hover:bg-red-600'
+                          : tracking === b.id ? 'bg-sky text-white' : 'border border-sky text-sky hover:bg-sky/10'
+                      }`}
                     >
-                      <span>📍</span> {tracking === b.id ? 'Hide map' : 'Track technician'}
+                      <span>📍</span> {tracking === b.id ? 'Hide map' : b.status === 'live' ? 'Track live' : 'Track technician'}
                     </button>
                   )}
                   {b.status === 'upcoming' && (
