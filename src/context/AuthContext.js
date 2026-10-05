@@ -31,9 +31,8 @@ export function AuthProvider({ children }) {
   function logout() {
     setUser(null)
     setCart([])
-    setBookings([])
+    // bookings are kept in localStorage so they survive logout/login
     try { localStorage.removeItem('resq_user') } catch {}
-    try { localStorage.removeItem('resq_bookings') } catch {}
   }
 
   function addBooking(booking) {
