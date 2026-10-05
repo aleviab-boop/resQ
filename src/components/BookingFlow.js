@@ -9,13 +9,14 @@ const TECHNICIANS = [
   { id: 3, name: 'Anil Kumar', rating: 4.8, jobs: 1102, exp: '5 yrs', specialization: 'Electronics', avatar: 'AK', badge: 'Expert' },
 ]
 
+// Capacity-based slot data (Q3 FY26 roadmap: capacity based dynamic promise)
 const TIME_SLOTS = [
-  '8:00 AM – 10:00 AM',
-  '10:00 AM – 12:00 PM',
-  '12:00 PM – 2:00 PM',
-  '2:00 PM – 4:00 PM',
-  '4:00 PM – 6:00 PM',
-  '6:00 PM – 8:00 PM',
+  { label: '8:00 AM – 10:00 AM', slots: 0, total: 4 },   // full
+  { label: '10:00 AM – 12:00 PM', slots: 2, total: 4 },  // 2 left
+  { label: '12:00 PM – 2:00 PM', slots: 4, total: 4 },
+  { label: '2:00 PM – 4:00 PM', slots: 1, total: 4 },    // only 1 left
+  { label: '4:00 PM – 6:00 PM', slots: 3, total: 4 },
+  { label: '6:00 PM – 8:00 PM', slots: 4, total: 4 },
 ]
 
 function getDates() {
@@ -99,14 +100,26 @@ export default function BookingFlow({ service, onClose }) {
         <div className="px-6 pt-3 pb-6">
           <p className="text-sm font-semibold text-gray-700 mb-3">Select time slot</p>
           <div className="grid grid-cols-2 gap-2">
-            {TIME_SLOTS.map(slot => (
-              <button key={slot} onClick={() => setSelectedSlot(slot)}
-                className={`py-3 px-4 rounded-xl border-2 text-sm font-medium transition ${
-                  selectedSlot === slot ? 'border-sky bg-sky/5 text-sky font-semibold' : 'border-gray-200 text-gray-700 hover:border-sky/50'
-                }`}>
-                {slot}
-              </button>
-            ))}
+            {TIME_SLOTS.map(slot => {
+              const full = slot.slots === 0
+              const scarce = slot.slots === 1
+              const isSelected = selectedSlot === slot.label
+              return (
+                <button key={slot.label}
+                  disabled={full}
+                  onClick={() => !full && setSelectedSlot(slot.label)}
+                  className={`py-3 px-4 rounded-xl border-2 text-sm font-medium transition relative ${
+                    full ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
+                    : isSelected ? 'border-sky bg-sky/5 text-sky font-semibold'
+                    : 'border-gray-200 text-gray-700 hover:border-sky/50'
+                  }`}>
+                  <div>{slot.label}</div>
+                  {full && <div className="text-xs text-gray-400 font-normal mt-0.5">Fully booked</div>}
+                  {!full && scarce && <div className="text-xs text-orange-500 font-semibold mt-0.5">Only 1 slot left!</div>}
+                  {!full && slot.slots === 2 && <div className="text-xs text-amber-500 font-semibold mt-0.5">2 slots left</div>}
+                </button>
+              )
+            })}
           </div>
         </div>
 

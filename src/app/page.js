@@ -3,6 +3,7 @@ import OfferCarousel from '@/components/OfferCarousel'
 import SearchBar from '@/components/SearchBar'
 import ServiceCard from '@/components/ServiceCard'
 import VideoCard from '@/components/VideoCard'
+import BundleDeals from '@/components/BundleDeals'
 import Link from 'next/link'
 import { mainAppliances, maintenanceServices, installationServices, testimonialVideos } from '@/lib/data'
 
@@ -44,6 +45,25 @@ export default function Dashboard() {
               </Link>
             ))}
           </div>
+        </section>
+
+        {/* Bundle Deals */}
+        <BundleDeals />
+
+        {/* Quick links — new pages */}
+        <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { href: '/amc', icon: '📅', label: 'AMC Plans', sub: 'Annual service contracts' },
+            { href: '/repair-vs-new', icon: '⚖️', label: 'Repair or Buy New?', sub: 'Get instant advice' },
+            { href: '/claim', icon: '📋', label: 'File a Claim', sub: 'Under warranty / care plan' },
+            { href: '/referral', icon: '🎁', label: 'Refer & Earn', sub: 'Get ₹100 per referral' },
+          ].map(item => (
+            <Link key={item.href} href={item.href} className="bg-white rounded-2xl shadow-card p-4 hover:shadow-lg transition flex flex-col gap-1.5">
+              <div className="text-2xl">{item.icon}</div>
+              <div className="text-sm font-bold text-gray-800 leading-tight">{item.label}</div>
+              <div className="text-xs text-gray-400">{item.sub}</div>
+            </Link>
+          ))}
         </section>
 
         {/* Maintenance Services */}

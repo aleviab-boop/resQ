@@ -2,6 +2,8 @@
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
+import ServiceReport from '@/components/ServiceReport'
+import RatingModal from '@/components/RatingModal'
 
 const MOCK_BOOKINGS = [
   {
@@ -165,7 +167,10 @@ export default function MyBookingsPage() {
   const router = useRouter()
   const [tab, setTab] = useState('all')
   const [mounted, setMounted] = useState(false)
-  const [tracking, setTracking] = useState(null) // booking id being tracked
+  const [tracking, setTracking] = useState(null)
+  const [reportBooking, setReportBooking] = useState(null)
+  const [ratingBooking, setRatingBooking] = useState(null)
+  const [rated, setRated] = useState({})
 
   useEffect(() => { setMounted(true) }, [])
   useEffect(() => { if (mounted && !user) router.push('/login') }, [mounted, user, router])
@@ -266,9 +271,22 @@ export default function MyBookingsPage() {
                     </button>
                   )}
                   {b.status === 'completed' && (
-                    <button className="text-xs px-3 py-1.5 bg-navy text-white rounded-lg font-semibold hover:bg-navy/90 transition">
-                      Book again
-                    </button>
+                    <>
+                      <button onClick={() => setReportBooking(b)} className="text-xs px-3 py-1.5 border border-navy text-navy rounded-lg font-semibold hover:bg-navy/5 transition flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        Report
+                      </button>
+                      {!rated[b.id] ? (
+                        <button onClick={() => setRatingBooking(b)} className="text-xs px-3 py-1.5 bg-amber-500 text-white rounded-lg font-semibold hover:bg-amber-600 transition flex items-center gap-1">
+                          ⭐ Rate
+                        </button>
+                      ) : (
+                        <span className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg font-semibold">✓ Rated</span>
+                      )}
+                      <button className="text-xs px-3 py-1.5 bg-navy text-white rounded-lg font-semibold hover:bg-navy/90 transition">
+                        Book again
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
@@ -276,6 +294,8 @@ export default function MyBookingsPage() {
           ))}
         </div>
       )}
+      {reportBooking && <ServiceReport booking={reportBooking} onClose={() => setReportBooking(null)} />}
+      {ratingBooking && <RatingModal booking={ratingBooking} onClose={() => setRatingBooking(null)} onSubmit={() => { setRated(r => ({...r, [ratingBooking.id]: true})); setRatingBooking(null) }} />}
     </div>
   )
 }

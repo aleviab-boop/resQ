@@ -63,7 +63,15 @@ export default function ServiceDetail({ params }) {
         <div className="lg:w-80 space-y-4 lg:sticky lg:top-24 self-start">
           <div className="bg-white rounded-2xl shadow-card p-6 space-y-4">
             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Service charges</div>
-            <div className="text-4xl font-extrabold text-gray-900">{svc.price}</div>
+            <div className="flex items-end gap-3">
+              <div className="text-4xl font-extrabold text-gray-900">{svc.price}</div>
+              <div className="text-sm text-gray-400 line-through mb-1">{svc.marketPrice || ''}</div>
+            </div>
+            {svc.savings && (
+              <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-100 text-xs font-bold px-3 py-1.5 rounded-xl">
+                <span>💚</span> You save {svc.savings} vs local market
+              </div>
+            )}
             <SlaBadge className="w-full" />
             <BookButton service={svc} />
           </div>
