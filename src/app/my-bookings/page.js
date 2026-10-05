@@ -260,7 +260,7 @@ export default function MyBookingsPage() {
               </div>
 
               {/* Tracking view (Q1 roadmap: dynamic tracking link) */}
-              {(b.status === 'upcoming' || b.status === 'live') && tracking === b.id && b.tech && (
+              {b.status === 'live' && tracking === b.id && b.tech && (
                 <div className="px-4 pb-4 space-y-3">
                   <TrackingMap etaMinutes={b.tech.eta} />
                   {/* Technician card */}
@@ -285,16 +285,12 @@ export default function MyBookingsPage() {
               <div className="border-t border-gray-100 px-4 py-3 flex items-center justify-between">
                 <span className="text-sm font-bold text-navy">{b.price}</span>
                 <div className="flex gap-2">
-                  {(b.status === 'upcoming' || b.status === 'live') && (
+                  {b.status === 'live' && (
                     <button
                       onClick={() => setTracking(tracking === b.id ? null : b.id)}
-                      className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 ${
-                        b.status === 'live'
-                          ? 'bg-red-500 text-white hover:bg-red-600'
-                          : tracking === b.id ? 'bg-sky text-white' : 'border border-sky text-sky hover:bg-sky/10'
-                      }`}
+                      className="text-xs px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600"
                     >
-                      <span>📍</span> {tracking === b.id ? 'Hide map' : b.status === 'live' ? 'Track live' : 'Track technician'}
+                      <span>📍</span> {tracking === b.id ? 'Hide map' : 'Track live'}
                     </button>
                   )}
                   {b.status === 'upcoming' && (
