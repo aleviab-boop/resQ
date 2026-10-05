@@ -192,7 +192,7 @@ export default function MyBookingsPage() {
 
   // Merge user-created bookings (newest first) with mock bookings
   const ALL_BOOKINGS = [...(userBookings || []), ...MOCK_BOOKINGS]
-  const filtered = tab === 'all' ? ALL_BOOKINGS : ALL_BOOKINGS.filter(b => b.status === tab || (tab === 'upcoming' && b.status === 'live'))
+  const filtered = tab === 'all' ? ALL_BOOKINGS : ALL_BOOKINGS.filter(b => b.status === tab)
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
