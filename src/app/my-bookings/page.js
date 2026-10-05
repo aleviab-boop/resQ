@@ -319,7 +319,7 @@ export default function MyBookingsPage() {
           </button>
         </div>
       ) : null}
-      {!loadingSkeleton && filtered.length > 0 ? (
+      {!loadingSkeleton && filtered.length > 0 && (
         <div className="space-y-4">
           {filtered.map(b => (
             <div key={b.id} className="bg-white rounded-2xl shadow-card overflow-hidden">
