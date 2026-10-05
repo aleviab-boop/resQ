@@ -63,15 +63,15 @@ const FILTER_TABS = [
 ]
 
 export default function NotificationsPage() {
-  const { user } = useAuth()
+  const { user, hydrated } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [notifs, setNotifs] = useState(MOCK_NOTIFS)
   const [filter, setFilter] = useState('all')
 
   useEffect(() => { setMounted(true) }, [])
-  useEffect(() => { if (mounted && !user) router.push('/login') }, [mounted, user, router])
-  if (!mounted || !user) return null
+  useEffect(() => { if (hydrated && !user) router.push('/login') }, [mounted, user, router])
+  if (!hydrated || !user) return null
 
   const filtered = filter === 'all' ? notifs : notifs.filter(n => n.type === filter)
   const unreadCount = notifs.filter(n => !n.read).length

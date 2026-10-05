@@ -16,7 +16,7 @@ export default function CartPage() {
     if (!user) router.push('/login')
   }, [user, router])
 
-  if (!mounted || !user) return null
+  if (!hydrated || !user) return null
 
   const subtotal = cart.reduce((sum, s) => {
     const num = parseInt(s.price.replace(/[^0-9]/g, ''))

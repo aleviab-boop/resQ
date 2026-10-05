@@ -24,7 +24,7 @@ function warrantyStatus(purchaseDate, warrantyYears) {
 }
 
 export default function MyDevicesPage() {
-  const { user } = useAuth()
+  const { user, hydrated } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [devices, setDevices] = useState([
@@ -35,8 +35,8 @@ export default function MyDevicesPage() {
   const [form, setForm] = useState({ type: '', brand: '', model: '', serial: '', purchaseDate: '', warrantyYears: '1' })
 
   useEffect(() => { setMounted(true) }, [])
-  useEffect(() => { if (mounted && !user) router.push('/login') }, [mounted, user, router])
-  if (!mounted || !user) return null
+  useEffect(() => { if (hydrated && !user) router.push('/login') }, [mounted, user, router])
+  if (!hydrated || !user) return null
 
   function addDevice() {
     if (!form.type || !form.brand || !form.model) return

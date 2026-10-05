@@ -20,7 +20,7 @@ const DEVICES = [
 ]
 
 export default function ClaimPage() {
-  const { user } = useAuth()
+  const { user, hydrated } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [step, setStep] = useState(1)
@@ -31,8 +31,8 @@ export default function ClaimPage() {
   const [claimId] = useState('CL' + Math.floor(Math.random() * 9000000 + 1000000))
 
   useEffect(() => { setMounted(true) }, [])
-  useEffect(() => { if (mounted && !user) router.push('/login') }, [mounted, user, router])
-  if (!mounted || !user) return null
+  useEffect(() => { if (hydrated && !user) router.push('/login') }, [mounted, user, router])
+  if (!hydrated || !user) return null
 
   if (step === 3) return (
     <div className="max-w-md mx-auto px-4 py-16 text-center">

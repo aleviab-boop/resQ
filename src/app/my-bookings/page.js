@@ -176,25 +176,26 @@ function TrackingMap({ etaMinutes }) {
 }
 
 export default function MyBookingsPage() {
-  const { user } = useAuth()
+  const { user, hydrated } = useAuth()
   const router = useRouter()
   const [tab, setTab] = useState('all')
-  const [mounted, setMounted] = useState(false)
   const [tracking, setTracking] = useState(null)
   const [reportBooking, setReportBooking] = useState(null)
   const [ratingBooking, setRatingBooking] = useState(null)
   const [rated, setRated] = useState({})
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
-  useEffect(() => { if (mounted && !user) router.push('/login') }, [mounted, user, router])
+  useEffect(() => { if (hydrated && !user) router.push('/login') }, [hydrated, user, router])
   // Auto-open tracking for live booking
   useEffect(() => {
-    if (mounted) {
+    if (hydrated && user) {
       const liveBooking = MOCK_BOOKINGS.find(b => b.status === 'live')
       if (liveBooking) setTracking(liveBooking.id)
     }
-  }, [mounted])
-  if (!mounted || !user) return null
+  }, [hydrated, user])
+  if (!hydrated || !mounted) return null
+  if (!user) return null
 
   const filtered = tab === 'all' ? MOCK_BOOKINGS : MOCK_BOOKINGS.filter(b => b.status === tab || (tab === 'upcoming' && b.status === 'live'))
 

@@ -10,14 +10,14 @@ const MOCK_REFERRALS = [
 ]
 
 export default function ReferralPage() {
-  const { user } = useAuth()
+  const { user, hydrated } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
-  useEffect(() => { if (mounted && !user) router.push('/login') }, [mounted, user, router])
-  if (!mounted || !user) return null
+  useEffect(() => { if (hydrated && !user) router.push('/login') }, [mounted, user, router])
+  if (!hydrated || !user) return null
 
   const code = 'RESQ' + (user.phone || '').slice(-4).toUpperCase() || 'RESQ1234'
   const totalEarned = MOCK_REFERRALS.filter(r => r.status === 'completed').reduce((s, r) => s + r.earned, 0)

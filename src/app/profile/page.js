@@ -9,7 +9,7 @@ const ADDRESSES = [
 ]
 
 export default function ProfilePage() {
-  const { user, logout } = useAuth()
+  const { user, logout, hydrated } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [addresses, setAddresses] = useState(ADDRESSES)
@@ -19,11 +19,11 @@ export default function ProfilePage() {
   useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
-    if (mounted && !user) { router.push('/login'); return }
+    if (hydrated && !user) { router.push('/login'); return }
     if (user) setName(user.name)
   }, [mounted, user, router])
 
-  if (!mounted || !user) return null
+  if (!hydrated || !user) return null
 
   function handleLogout() {
     logout()
