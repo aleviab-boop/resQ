@@ -12,8 +12,6 @@ export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropRef = useRef(null)
 
-  if (pathname === '/login') return null
-
   useEffect(() => {
     function handleClick(e) {
       if (dropRef.current && !dropRef.current.contains(e.target)) {
@@ -23,6 +21,8 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
+
+  if (pathname === '/login') return null
 
   const links = [
     { href: '/all-services', label: 'All services' },
