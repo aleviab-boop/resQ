@@ -63,7 +63,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-130px)] flex items-center justify-center bg-gradient-to-br from-sky-light to-blue-50 px-4 py-10">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-light to-blue-50 px-4 py-10">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
 
         {/* Header */}
