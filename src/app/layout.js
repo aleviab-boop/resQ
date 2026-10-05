@@ -4,6 +4,7 @@ import { ToastProvider } from '@/components/Toast'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import FaqBot from '@/components/FaqBot'
+import Onboarding from '@/components/Onboarding'
 
 export const metadata = {
   title: 'Reliance resQ – Expert Home Appliance Care',
@@ -25,6 +26,7 @@ export default function RootLayout({ children }) {
             <main>{children}</main>
             <Footer />
             <FaqBot />
+            <Onboarding />
           </ToastProvider>
         </AuthProvider>
       </body>

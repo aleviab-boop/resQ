@@ -272,11 +272,20 @@ export default function MyBookingsPage() {
 
       {/* Booking cards */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
-          <div className="text-5xl mb-4">📋</div>
-          <div className="font-semibold text-gray-500">No bookings found</div>
+        <div className="text-center py-16">
+          <div className="text-6xl mb-4">
+            {tab === 'upcoming' ? '🗓️' : tab === 'completed' ? '✅' : tab === 'cancelled' ? '🚫' : '📋'}
+          </div>
+          <div className="font-bold text-gray-700 text-lg mb-1">
+            {tab === 'upcoming' ? 'No upcoming bookings' : tab === 'completed' ? 'No completed services yet' : tab === 'cancelled' ? 'No cancelled bookings' : 'No bookings yet'}
+          </div>
+          <div className="text-sm text-gray-400 mb-5">
+            {tab === 'upcoming' ? 'Book a service and it will appear here.' : tab === 'completed' ? 'Your completed services will show here.' : tab === 'cancelled' ? 'Cancelled bookings will appear here.' : 'Your booking history will appear here.'}
+          </div>
           <button onClick={() => router.push('/all-services')}
-            className="mt-4 text-sky text-sm font-semibold">Browse services →</button>
+            className="bg-sky text-white font-bold px-6 py-3 rounded-2xl hover:bg-sky/90 transition text-sm">
+            Browse services →
+          </button>
         </div>
       ) : (
         <div className="space-y-4">

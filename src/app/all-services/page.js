@@ -1,7 +1,8 @@
 'use client'
 import ServiceCard from '@/components/ServiceCard'
+import { SkeletonGrid } from '@/components/SkeletonCard'
 import { allAppliances, maintenanceServices, installationServices } from '@/lib/data'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const APPLIANCE_KEYWORDS = {
   'Air Conditioner': ['ac', 'split ac', 'window ac', 'air conditioner'],
@@ -22,6 +23,12 @@ function matchesAppliance(service, appliance) {
 export default function AllServices() {
   const [activeAppliance, setActiveAppliance] = useState(null)
   const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 800)
+    return () => clearTimeout(t)
+  }, [])
 
   const allMaintenance = maintenanceServices
   const allInstallation = installationServices
@@ -110,14 +117,16 @@ export default function AllServices() {
         {/* Maintenance */}
         <section>
           <h2 className="text-xl font-bold text-gray-900 mb-4">Maintenance services</h2>
-          {filteredMaintenance.length > 0 ? (
+          {loading ? <SkeletonGrid count={8} /> : filteredMaintenance.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredMaintenance.map(s => <ServiceCard key={s.name} service={s} />)}
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-2xl py-10 text-center text-gray-400">
-              <div className="text-3xl mb-2">🔍</div>
-              <div className="text-sm">No maintenance services found for {activeAppliance}</div>
+            <div className="bg-gray-50 rounded-2xl py-12 text-center">
+              <div className="text-5xl mb-3">🔍</div>
+              <div className="font-semibold text-gray-500 mb-1">No services found</div>
+              <div className="text-xs text-gray-400">{search ? `No results for "${search}"` : `No maintenance services for ${activeAppliance}`}</div>
+              <button onClick={() => { setSearch(''); setActiveAppliance(null) }} className="mt-4 text-sky text-sm font-semibold">Clear filters</button>
             </div>
           )}
         </section>
