@@ -1,7 +1,7 @@
 'use client'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 const MOCK_BOOKINGS = [
   {
@@ -14,6 +14,7 @@ const MOCK_BOOKINGS = [
     status: 'upcoming',
     price: '₹599',
     img: 'https://myjiostatic.cdn.jio.com/JPW/CDIT_Consumer/images/backend/compressed/splite_ac_Split_AC_Jet_Service.webp',
+    tech: { name: 'Rahul Sharma', rating: 4.8, jobs: 312, phone: '+91 98200 11223', eta: 18 },
   },
   {
     id: 'BK2026002',
@@ -25,6 +26,7 @@ const MOCK_BOOKINGS = [
     status: 'completed',
     price: '₹189',
     img: 'https://myjiostatic.cdn.jio.com/JPW/CDIT_Consumer/images/backend/compressed/TV_Tv_cleanning_copy.webp',
+    tech: { name: 'Vikram Patel', rating: 4.6, jobs: 198, phone: '+91 98200 33445' },
   },
   {
     id: 'BK2026003',
@@ -36,6 +38,7 @@ const MOCK_BOOKINGS = [
     status: 'completed',
     price: '₹409',
     img: 'https://myjiostatic.cdn.jio.com/JPW/CDIT_Consumer/images/backend/compressed/front_Load_Washing_Machine_washing_machine_installation_.webp',
+    tech: { name: 'Suresh Kumar', rating: 4.9, jobs: 450, phone: '+91 98200 55667' },
   },
   {
     id: 'BK2026004',
@@ -56,18 +59,116 @@ const STATUS_CONFIG = {
   cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-500' },
 }
 
+// Simulated route waypoints for the technician map (Mumbai area)
+const ROUTE = [
+  [19.123, 72.846], [19.120, 72.842], [19.117, 72.838],
+  [19.115, 72.835], [19.113, 72.832], [19.111, 72.829],
+  [19.108, 72.825], [19.106, 72.822], [19.104, 72.820],
+]
+const DEST = [19.104, 72.820]
+
+function Stars({ rating }) {
+  return (
+    <span className="inline-flex items-center gap-0.5">
+      {[1,2,3,4,5].map(i => (
+        <svg key={i} className={`w-3 h-3 ${i <= Math.round(rating) ? 'text-yellow-400' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+        </svg>
+      ))}
+    </span>
+  )
+}
+
+// Simplified SVG map showing technician route (roadmap Q1/Q2: dynamic tracking + ETA)
+function TrackingMap({ etaMinutes }) {
+  const [step, setStep] = useState(0)
+  const timerRef = useRef(null)
+
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      setStep(s => s < ROUTE.length - 1 ? s + 1 : s)
+    }, 2000)
+    return () => clearInterval(timerRef.current)
+  }, [])
+
+  const progress = step / (ROUTE.length - 1)
+  const remainingEta = Math.max(0, Math.round(etaMinutes * (1 - progress)))
+
+  // Normalize coords for SVG viewport
+  const minLat = Math.min(...ROUTE.map(r => r[0])) - 0.002
+  const maxLat = Math.max(...ROUTE.map(r => r[0])) + 0.002
+  const minLng = Math.min(...ROUTE.map(r => r[1])) - 0.002
+  const maxLng = Math.max(...ROUTE.map(r => r[1])) + 0.002
+
+  function toSVG([lat, lng]) {
+    const x = ((lng - minLng) / (maxLng - minLng)) * 300
+    const y = (1 - (lat - minLat) / (maxLat - minLat)) * 180
+    return [x, y]
+  }
+
+  const points = ROUTE.map(toSVG)
+  const [tx, ty] = points[step]
+  const [dx, dy] = toSVG(DEST)
+  const polyline = points.map(([x, y]) => `${x},${y}`).join(' ')
+  const travelledPts = points.slice(0, step + 1).map(([x, y]) => `${x},${y}`).join(' ')
+
+  return (
+    <div className="rounded-2xl overflow-hidden bg-blue-50 border border-sky/20">
+      {/* ETA header */}
+      <div className="bg-sky px-5 py-3 flex items-center justify-between">
+        <div>
+          <div className="text-white text-xs font-semibold opacity-80">Technician on the way</div>
+          <div className="text-white text-xl font-extrabold">{remainingEta === 0 ? 'Arriving now!' : `${remainingEta} min away`}</div>
+        </div>
+        <div className="text-3xl">🛵</div>
+      </div>
+
+      {/* SVG map */}
+      <div className="relative bg-[#e8f4fd] p-3">
+        <svg viewBox="0 0 300 180" className="w-full rounded-xl" style={{background: 'linear-gradient(135deg, #e8f4fd 0%, #ddf0fb 100%)'}}>
+          {/* Road grid */}
+          {[40,80,120,160].map(y => <line key={y} x1="0" y1={y} x2="300" y2={y} stroke="#c5dff0" strokeWidth="1"/>)}
+          {[60,120,180,240].map(x => <line key={x} x1={x} y1="0" x2={x} y2="180" stroke="#c5dff0" strokeWidth="1"/>)}
+
+          {/* Full route (grey) */}
+          {points.length > 1 && <polyline points={polyline} fill="none" stroke="#aacbe8" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="6 3"/>}
+
+          {/* Travelled route (blue) */}
+          {step > 0 && <polyline points={travelledPts} fill="none" stroke="#00a1e1" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>}
+
+          {/* Destination pin */}
+          <circle cx={dx} cy={dy} r="10" fill="#13347b" opacity="0.15"/>
+          <circle cx={dx} cy={dy} r="6" fill="#13347b"/>
+          <text x={dx} y={dy + 1} textAnchor="middle" dominantBaseline="middle" fontSize="7" fill="white">🏠</text>
+
+          {/* Technician dot */}
+          <circle cx={tx} cy={ty} r="12" fill="#00a1e1" opacity="0.2"/>
+          <circle cx={tx} cy={ty} r="8" fill="#00a1e1" stroke="white" strokeWidth="2"/>
+          <text x={tx} y={ty + 1} textAnchor="middle" dominantBaseline="middle" fontSize="8">🛵</text>
+        </svg>
+
+        {/* Progress bar */}
+        <div className="mt-2 bg-white rounded-full h-1.5 overflow-hidden">
+          <div className="bg-sky h-full rounded-full transition-all duration-1000" style={{width: `${progress * 100}%`}}/>
+        </div>
+        <div className="flex justify-between text-xs text-gray-400 mt-1">
+          <span>Technician location</span>
+          <span>Your address</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function MyBookingsPage() {
   const { user } = useAuth()
   const router = useRouter()
   const [tab, setTab] = useState('all')
   const [mounted, setMounted] = useState(false)
+  const [tracking, setTracking] = useState(null) // booking id being tracked
 
   useEffect(() => { setMounted(true) }, [])
-
-  useEffect(() => {
-    if (mounted && !user) router.push('/login')
-  }, [mounted, user, router])
-
+  useEffect(() => { if (mounted && !user) router.push('/login') }, [mounted, user, router])
   if (!mounted || !user) return null
 
   const filtered = tab === 'all' ? MOCK_BOOKINGS : MOCK_BOOKINGS.filter(b => b.status === tab)
@@ -124,16 +225,43 @@ export default function MyBookingsPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Tracking view (Q1 roadmap: dynamic tracking link) */}
+              {b.status === 'upcoming' && tracking === b.id && b.tech && (
+                <div className="px-4 pb-4 space-y-3">
+                  <TrackingMap etaMinutes={b.tech.eta} />
+                  {/* Technician card */}
+                  <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
+                    <div className="w-11 h-11 rounded-full bg-navy text-white flex items-center justify-center font-bold text-base flex-shrink-0">
+                      {b.tech.name.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-gray-900 text-sm">{b.tech.name}</div>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <Stars rating={b.tech.rating} />
+                        <span className="text-xs text-gray-500">{b.tech.rating} · {b.tech.jobs} jobs</span>
+                      </div>
+                    </div>
+                    <a href={`tel:${b.tech.phone}`} className="w-9 h-9 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 hover:bg-green-600 transition">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+                    </a>
+                  </div>
+                </div>
+              )}
+
               <div className="border-t border-gray-100 px-4 py-3 flex items-center justify-between">
                 <span className="text-sm font-bold text-navy">{b.price}</span>
                 <div className="flex gap-2">
                   {b.status === 'upcoming' && (
-                    <button className="text-xs px-3 py-1.5 border border-red-300 text-red-500 rounded-lg font-semibold hover:bg-red-50 transition">
-                      Cancel
+                    <button
+                      onClick={() => setTracking(tracking === b.id ? null : b.id)}
+                      className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 ${tracking === b.id ? 'bg-sky text-white' : 'border border-sky text-sky hover:bg-sky/10'}`}
+                    >
+                      <span>📍</span> {tracking === b.id ? 'Hide map' : 'Track technician'}
                     </button>
                   )}
                   {b.status === 'upcoming' && (
-                    <button className="text-xs px-3 py-1.5 border border-sky text-sky rounded-lg font-semibold hover:bg-sky/10 transition">
+                    <button className="text-xs px-3 py-1.5 border border-gray-200 text-gray-500 rounded-lg font-semibold hover:bg-gray-50 transition">
                       Reschedule
                     </button>
                   )}

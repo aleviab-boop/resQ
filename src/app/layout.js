@@ -2,6 +2,7 @@ import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import FaqBot from '@/components/FaqBot'
 
 export const metadata = {
   title: 'Reliance resQ – Expert Home Appliance Care',
@@ -21,6 +22,7 @@ export default function RootLayout({ children }) {
           <Navbar />
           <main>{children}</main>
           <Footer />
+          <FaqBot />
         </AuthProvider>
       </body>
     </html>

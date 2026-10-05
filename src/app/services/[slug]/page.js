@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getServiceBySlug, allServices, slugify } from '@/lib/data'
 import BookButton from './BookButton'
+import SlaBadge from '@/components/SlaBadge'
 
 export async function generateStaticParams() {
   return allServices.map(s => ({ slug: slugify(s.name) }))
@@ -63,6 +64,7 @@ export default function ServiceDetail({ params }) {
           <div className="bg-white rounded-2xl shadow-card p-6 space-y-4">
             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Service charges</div>
             <div className="text-4xl font-extrabold text-gray-900">{svc.price}</div>
+            <SlaBadge className="w-full" />
             <BookButton service={svc} />
           </div>
 

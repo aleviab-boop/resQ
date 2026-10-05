@@ -49,11 +49,15 @@ export default function LocationBar() {
     setSelected({ name: city.name, addr: `${city.name}, ${city.addr}` })
     setOpen(false)
     setQuery('')
+    // Clear pincode SLA when selecting by city name
+    try { localStorage.removeItem('resq_pincode') } catch {}
   }
 
   function selectPincode() {
     if (!pincodeResult) return
     setSelected({ name: pincodeResult.name, addr: pincodeResult.addr })
+    // Save pincode for SLA promise (FY26 Q1 roadmap feature)
+    try { localStorage.setItem('resq_pincode', query.trim()) } catch {}
     setOpen(false)
     setQuery('')
     setPincodeResult(null)
