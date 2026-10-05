@@ -48,40 +48,43 @@ function Stars({ rating }) {
   )
 }
 
-// Confetti burst component
+// Confetti burst — fixed overlay so it's always visible regardless of modal scroll/size
 function Confetti() {
   const canvasRef = useRef(null)
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
+    const W = window.innerWidth
+    const H = window.innerHeight
+    canvas.width = W
+    canvas.height = H
     const ctx = canvas.getContext('2d')
-    canvas.width = canvas.offsetWidth
-    canvas.height = canvas.offsetHeight
     const colors = ['#00a1e1', '#13347b', '#fbbf24', '#34d399', '#f87171', '#a78bfa', '#fb923c']
-    const particles = Array.from({ length: 80 }, () => ({
-      x: canvas.width / 2,
-      y: canvas.height / 3,
-      vx: (Math.random() - 0.5) * 12,
-      vy: (Math.random() - 0.8) * 10,
+    const particles = Array.from({ length: 100 }, () => ({
+      x: W / 2,
+      y: H / 2,
+      vx: (Math.random() - 0.5) * 18,
+      vy: (Math.random() - 1.2) * 14,
       color: colors[Math.floor(Math.random() * colors.length)],
-      size: Math.random() * 8 + 4,
+      size: Math.random() * 10 + 5,
       rotation: Math.random() * 360,
-      rotationSpeed: (Math.random() - 0.5) * 8,
+      rotationSpeed: (Math.random() - 0.5) * 10,
       alpha: 1,
       shape: Math.random() > 0.5 ? 'rect' : 'circle',
     }))
     let frame = 0
+    let raf
     function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.clearRect(0, 0, W, H)
       particles.forEach(p => {
         p.x += p.vx
         p.y += p.vy
-        p.vy += 0.3
+        p.vy += 0.4
         p.rotation += p.rotationSpeed
-        p.alpha -= 0.012
+        p.alpha -= 0.013
         if (p.alpha <= 0) return
         ctx.save()
-        ctx.globalAlpha = p.alpha
+        ctx.globalAlpha = Math.max(0, p.alpha)
         ctx.translate(p.x, p.y)
         ctx.rotate((p.rotation * Math.PI) / 180)
         ctx.fillStyle = p.color
@@ -95,11 +98,18 @@ function Confetti() {
         ctx.restore()
       })
       frame++
-      if (frame < 120) requestAnimationFrame(animate)
+      if (frame < 150) raf = requestAnimationFrame(animate)
     }
     animate()
+    return () => cancelAnimationFrame(raf)
   }, [])
-  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }} />
+  return (
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-none"
+      style={{ position: 'fixed', top: 0, left: 0, zIndex: 9999 }}
+    />
+  )
 }
 
 function applyDiscount(price, couponData) {
