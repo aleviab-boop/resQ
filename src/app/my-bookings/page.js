@@ -1,5 +1,6 @@
 'use client'
 import { useAuth } from '@/context/AuthContext'
+import { useToast } from '@/components/Toast'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
 import ServiceReport from '@/components/ServiceReport'
@@ -175,8 +176,25 @@ function TrackingMap({ etaMinutes }) {
   )
 }
 
+const CANCEL_REASONS = [
+  'Technician not available', 'Rescheduled to another day',
+  'Issue resolved on its own', 'Found a better option', 'Other reason',
+]
+
+const TIME_SLOTS = ['8:00 AM – 10:00 AM','10:00 AM – 12:00 PM','12:00 PM – 2:00 PM','2:00 PM – 4:00 PM','4:00 PM – 6:00 PM','6:00 PM – 8:00 PM']
+
+function getDates() {
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  return Array.from({length: 7}, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() + i)
+    return { label: i===0?'Today':i===1?'Tomorrow':days[d.getDay()], date: `${d.getDate()} ${months[d.getMonth()]}` }
+  })
+}
+
 export default function MyBookingsPage() {
   const { user, hydrated, bookings: userBookings } = useAuth()
+  const showToast = useToast()
   const router = useRouter()
   const [tab, setTab] = useState('all')
   const [tracking, setTracking] = useState(null)
@@ -184,14 +202,41 @@ export default function MyBookingsPage() {
   const [ratingBooking, setRatingBooking] = useState(null)
   const [rated, setRated] = useState({})
   const [mounted, setMounted] = useState(false)
+  const [cancelBooking, setCancelBooking] = useState(null)
+  const [cancelReason, setCancelReason] = useState('')
+  const [cancelledIds, setCancelledIds] = useState([])
+  const [rescheduleBooking, setRescheduleBooking] = useState(null)
+  const [rescheduleDate, setRescheduleDate] = useState(null)
+  const [rescheduleSlot, setRescheduleSlot] = useState(null)
+  const [rescheduledMap, setRescheduledMap] = useState({})
 
   useEffect(() => { setMounted(true) }, [])
   useEffect(() => { if (hydrated && !user) router.push('/login') }, [hydrated, user, router])
   if (!hydrated || !mounted) return null
   if (!user) return null
 
+  function handleCancel() {
+    setCancelledIds(prev => [...prev, cancelBooking.id])
+    setCancelBooking(null)
+    setCancelReason('')
+    showToast('Booking cancelled successfully', 'info')
+  }
+
+  function handleReschedule() {
+    if (!rescheduleDate || !rescheduleSlot) return
+    setRescheduledMap(prev => ({ ...prev, [rescheduleBooking.id]: { date: `${rescheduleDate.label}, ${rescheduleDate.date}`, time: rescheduleSlot } }))
+    setRescheduleBooking(null)
+    setRescheduleDate(null)
+    setRescheduleSlot(null)
+    showToast('Booking rescheduled!', 'success')
+  }
+
   // Merge user-created bookings (newest first) with mock bookings
-  const ALL_BOOKINGS = [...(userBookings || []), ...MOCK_BOOKINGS]
+  const ALL_BOOKINGS = [...(userBookings || []), ...MOCK_BOOKINGS].map(b => {
+    const rescheduled = rescheduledMap[b.id]
+    const cancelled = cancelledIds.includes(b.id)
+    return { ...b, ...(rescheduled || {}), status: cancelled ? 'cancelled' : b.status }
+  })
   const filtered = tab === 'all' ? ALL_BOOKINGS : ALL_BOOKINGS.filter(b => b.status === tab)
 
   return (
@@ -294,9 +339,16 @@ export default function MyBookingsPage() {
                     </button>
                   )}
                   {b.status === 'upcoming' && (
-                    <button className="text-xs px-3 py-1.5 border border-gray-200 text-gray-500 rounded-lg font-semibold hover:bg-gray-50 transition">
-                      Reschedule
-                    </button>
+                    <>
+                      <button onClick={() => { setRescheduleBooking(b); setRescheduleDate(null); setRescheduleSlot(null) }}
+                        className="text-xs px-3 py-1.5 border border-sky text-sky rounded-lg font-semibold hover:bg-sky/10 transition">
+                        Reschedule
+                      </button>
+                      <button onClick={() => { setCancelBooking(b); setCancelReason('') }}
+                        className="text-xs px-3 py-1.5 border border-red-200 text-red-500 rounded-lg font-semibold hover:bg-red-50 transition">
+                        Cancel
+                      </button>
+                    </>
                   )}
                   {b.status === 'completed' && (
                     <>
@@ -323,7 +375,64 @@ export default function MyBookingsPage() {
         </div>
       )}
       {reportBooking && <ServiceReport booking={reportBooking} onClose={() => setReportBooking(null)} />}
-      {ratingBooking && <RatingModal booking={ratingBooking} onClose={() => setRatingBooking(null)} onSubmit={() => { setRated(r => ({...r, [ratingBooking.id]: true})); setRatingBooking(null) }} />}
+      {ratingBooking && <RatingModal booking={ratingBooking} onClose={() => setRatingBooking(null)} onSubmit={() => { setRated(r => ({...r, [ratingBooking.id]: true})); setRatingBooking(null); showToast('Thanks for your rating! ⭐', 'success') }} />}
+
+      {/* Cancel Modal */}
+      {cancelBooking && (
+        <div className="fixed inset-0 z-[400] bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setCancelBooking(null)}>
+          <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
+            <h3 className="font-extrabold text-lg text-gray-900 mb-1">Cancel booking?</h3>
+            <p className="text-sm text-gray-500 mb-4">{cancelBooking.service}</p>
+            <div className="space-y-2 mb-5">
+              {CANCEL_REASONS.map(r => (
+                <button key={r} onClick={() => setCancelReason(r)}
+                  className={`w-full text-left px-4 py-3 rounded-xl border-2 text-sm font-semibold transition ${cancelReason === r ? 'border-red-400 bg-red-50 text-red-700' : 'border-gray-200 text-gray-700 hover:border-gray-300'}`}>
+                  {cancelReason === r ? '● ' : '○ '}{r}
+                </button>
+              ))}
+            </div>
+            <button disabled={!cancelReason} onClick={handleCancel}
+              className={`w-full py-4 rounded-2xl font-bold text-white transition mb-2 ${cancelReason ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
+              Confirm Cancellation
+            </button>
+            <button onClick={() => setCancelBooking(null)} className="w-full py-3 text-gray-500 text-sm font-semibold">Keep booking</button>
+          </div>
+        </div>
+      )}
+
+      {/* Reschedule Modal */}
+      {rescheduleBooking && (
+        <div className="fixed inset-0 z-[400] bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setRescheduleBooking(null)}>
+          <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <h3 className="font-extrabold text-lg text-gray-900 mb-1">Reschedule booking</h3>
+            <p className="text-sm text-gray-500 mb-4">{rescheduleBooking.service}</p>
+            <p className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Pick a date</p>
+            <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
+              {getDates().map(d => (
+                <button key={d.date} onClick={() => setRescheduleDate(d)}
+                  className={`flex-shrink-0 flex flex-col items-center px-4 py-3 rounded-xl border-2 text-xs font-bold transition ${rescheduleDate?.date === d.date ? 'border-sky bg-sky/10 text-sky' : 'border-gray-200 text-gray-700 hover:border-sky/40'}`}>
+                  <span className="text-gray-400 font-normal">{d.label}</span>
+                  <span className="mt-0.5">{d.date}</span>
+                </button>
+              ))}
+            </div>
+            <p className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Pick a time</p>
+            <div className="grid grid-cols-2 gap-2 mb-5">
+              {TIME_SLOTS.map(slot => (
+                <button key={slot} onClick={() => setRescheduleSlot(slot)}
+                  className={`py-3 rounded-xl border-2 text-xs font-semibold transition ${rescheduleSlot === slot ? 'border-sky bg-sky/10 text-sky' : 'border-gray-200 text-gray-700 hover:border-sky/40'}`}>
+                  {slot}
+                </button>
+              ))}
+            </div>
+            <button disabled={!rescheduleDate || !rescheduleSlot} onClick={handleReschedule}
+              className={`w-full py-4 rounded-2xl font-bold text-white transition mb-2 ${rescheduleDate && rescheduleSlot ? 'bg-sky hover:bg-sky/90' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
+              Confirm Reschedule
+            </button>
+            <button onClick={() => setRescheduleBooking(null)} className="w-full py-3 text-gray-500 text-sm font-semibold">Cancel</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

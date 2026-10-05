@@ -21,17 +21,24 @@ function matchesAppliance(service, appliance) {
 
 export default function AllServices() {
   const [activeAppliance, setActiveAppliance] = useState(null)
+  const [search, setSearch] = useState('')
 
   const allMaintenance = maintenanceServices
   const allInstallation = installationServices
 
-  const filteredMaintenance = activeAppliance
-    ? allMaintenance.filter(s => matchesAppliance(s, activeAppliance))
-    : allMaintenance
+  const q = search.trim().toLowerCase()
 
-  const filteredInstallation = activeAppliance
-    ? allInstallation.filter(s => matchesAppliance(s, activeAppliance))
-    : allInstallation
+  const filteredMaintenance = allMaintenance.filter(s => {
+    const matchesSearch = !q || s.name.toLowerCase().includes(q)
+    const matchesFilter = !activeAppliance || matchesAppliance(s, activeAppliance)
+    return matchesSearch && matchesFilter
+  })
+
+  const filteredInstallation = allInstallation.filter(s => {
+    const matchesSearch = !q || s.name.toLowerCase().includes(q)
+    const matchesFilter = !activeAppliance || matchesAppliance(s, activeAppliance)
+    return matchesSearch && matchesFilter
+  })
 
   function handleAppliance(name) {
     setActiveAppliance(prev => prev === name ? null : name)
@@ -42,6 +49,23 @@ export default function AllServices() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-12">
+
+      {/* Search bar */}
+      <div className="relative">
+        <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+        </svg>
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search services (e.g. AC jet, fridge cleaning...)"
+          className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-gray-200 focus:border-sky outline-none text-sm bg-white shadow-sm"
+        />
+        {search && (
+          <button onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">✕</button>
+        )}
+      </div>
 
       {/* All appliances grid */}
       <section>

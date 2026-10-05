@@ -4,6 +4,7 @@ import SearchBar from '@/components/SearchBar'
 import ServiceCard from '@/components/ServiceCard'
 import VideoCard from '@/components/VideoCard'
 import BundleDeals from '@/components/BundleDeals'
+import DashboardWidgets from '@/components/DashboardWidgets'
 import Link from 'next/link'
 import { mainAppliances, maintenanceServices, installationServices, testimonialVideos } from '@/lib/data'
 
@@ -21,6 +22,9 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-gray-900 leading-tight">Hello,<br />Welcome to Reliance resQ</h1>
           <p className="text-gray-500 text-sm mt-2">Your trusted expert for complete electronics care.</p>
         </div>
+
+        {/* Dashboard Widgets — active booking + warranty nudge */}
+        <DashboardWidgets />
 
         {/* Offer Carousel */}
         <OfferCarousel />

@@ -1,5 +1,6 @@
 import './globals.css'
 import { AuthProvider } from '@/context/AuthContext'
+import { ToastProvider } from '@/components/Toast'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import FaqBot from '@/components/FaqBot'
@@ -19,10 +20,12 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <AuthProvider>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
-          <FaqBot />
+          <ToastProvider>
+            <Navbar />
+            <main>{children}</main>
+            <Footer />
+            <FaqBot />
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>
