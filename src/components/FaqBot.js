@@ -1,6 +1,5 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { usePathname } from 'next/navigation'
 
 const FAQ_RESPONSES = {
   'how to book': 'To book a service, go to **All Services**, pick your appliance, choose a service, and tap **Book Now**. You can select your preferred date, time slot, and technician. 📅',
@@ -54,10 +53,12 @@ function UserMessage({ text }) {
 }
 
 export default function FaqBot() {
-  const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [isLoginPage, setIsLoginPage] = useState(true)
 
-  if (pathname === '/login') return null
+  useEffect(() => {
+    setIsLoginPage(window.location.pathname === '/login')
+  }, [])
   const [messages, setMessages] = useState([
     { type: 'bot', text: "Hi! 👋 I'm the resQ Support Bot. How can I help you today?" }
   ])
@@ -78,6 +79,8 @@ export default function FaqBot() {
   }
 
   function handleKey(e) { if (e.key === 'Enter') send(input) }
+
+  if (isLoginPage) return null
 
   return (
     <>
