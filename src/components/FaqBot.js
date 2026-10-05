@@ -98,10 +98,13 @@ export default function FaqBot() {
           {/* Header */}
           <div className="bg-sky px-4 py-3 flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">rQ</div>
-            <div>
+            <div className="flex-1">
               <div className="text-white font-bold text-sm">resQ Support</div>
               <div className="text-white/80 text-xs flex items-center gap-1"><span className="w-2 h-2 bg-green-400 rounded-full inline-block"></span> Online · Replies instantly</div>
             </div>
+            <button onClick={() => setOpen(false)} className="text-white/70 hover:text-white transition ml-auto">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
           </div>
 
           {/* Messages */}
