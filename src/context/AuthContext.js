@@ -6,13 +6,18 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [cart, setCart] = useState([])
+  const [bookings, setBookings] = useState([])
   const [hydrated, setHydrated] = useState(false)
 
-  // Restore user from localStorage on mount
+  // Restore user and bookings from localStorage on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem('resq_user')
       if (saved) setUser(JSON.parse(saved))
+    } catch {}
+    try {
+      const savedBookings = localStorage.getItem('resq_bookings')
+      if (savedBookings) setBookings(JSON.parse(savedBookings))
     } catch {}
     setHydrated(true)
   }, [])
@@ -26,7 +31,17 @@ export function AuthProvider({ children }) {
   function logout() {
     setUser(null)
     setCart([])
+    setBookings([])
     try { localStorage.removeItem('resq_user') } catch {}
+    try { localStorage.removeItem('resq_bookings') } catch {}
+  }
+
+  function addBooking(booking) {
+    setBookings(prev => {
+      const updated = [booking, ...prev]
+      try { localStorage.setItem('resq_bookings', JSON.stringify(updated)) } catch {}
+      return updated
+    })
   }
 
   function addToCart(service) {
@@ -41,7 +56,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, cart, addToCart, removeFromCart, hydrated }}>
+    <AuthContext.Provider value={{ user, login, logout, cart, addToCart, removeFromCart, bookings, addBooking, hydrated }}>
       {children}
     </AuthContext.Provider>
   )

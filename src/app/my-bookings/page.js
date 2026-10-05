@@ -176,7 +176,7 @@ function TrackingMap({ etaMinutes }) {
 }
 
 export default function MyBookingsPage() {
-  const { user, hydrated } = useAuth()
+  const { user, hydrated, bookings: userBookings } = useAuth()
   const router = useRouter()
   const [tab, setTab] = useState('all')
   const [tracking, setTracking] = useState(null)
@@ -187,24 +187,19 @@ export default function MyBookingsPage() {
 
   useEffect(() => { setMounted(true) }, [])
   useEffect(() => { if (hydrated && !user) router.push('/login') }, [hydrated, user, router])
-  // Auto-open tracking for live booking
-  useEffect(() => {
-    if (hydrated && user) {
-      const liveBooking = MOCK_BOOKINGS.find(b => b.status === 'live')
-      if (liveBooking) setTracking(liveBooking.id)
-    }
-  }, [hydrated, user])
   if (!hydrated || !mounted) return null
   if (!user) return null
 
-  const filtered = tab === 'all' ? MOCK_BOOKINGS : MOCK_BOOKINGS.filter(b => b.status === tab || (tab === 'upcoming' && b.status === 'live'))
+  // Merge user-created bookings (newest first) with mock bookings
+  const ALL_BOOKINGS = [...(userBookings || []), ...MOCK_BOOKINGS]
+  const filtered = tab === 'all' ? ALL_BOOKINGS : ALL_BOOKINGS.filter(b => b.status === tab || (tab === 'upcoming' && b.status === 'live'))
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
       <h1 className="text-xl font-bold text-gray-900">My Bookings</h1>
 
       {/* Live booking banner */}
-      {MOCK_BOOKINGS.some(b => b.status === 'live') && (
+      {ALL_BOOKINGS.some(b => b.status === 'live') && (
         <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl p-4 flex items-center gap-3 animate-pulse">
           <span className="text-2xl">🛵</span>
           <div className="flex-1">

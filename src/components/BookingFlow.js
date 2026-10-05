@@ -32,7 +32,7 @@ function getDates() {
 }
 
 export default function BookingFlow({ service, onClose }) {
-  const { user } = useAuth()
+  const { user, addBooking } = useAuth()
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [selectedDate, setSelectedDate] = useState(null)
@@ -257,7 +257,22 @@ export default function BookingFlow({ service, onClose }) {
 
         <div className="px-6 pb-6 flex gap-3">
           <button onClick={() => setStep(2)} className="flex-1 py-4 rounded-xl border-2 border-gray-200 font-semibold text-gray-600 hover:border-gray-300 transition">← Back</button>
-          <button onClick={() => setStep(4)} className="flex-1 py-4 rounded-xl font-bold text-white bg-sky hover:bg-sky/90 transition">Confirm Booking</button>
+          <button onClick={() => {
+            addBooking({
+              id: bookingId,
+              service: service?.name,
+              appliance: service?.category || 'Appliance',
+              date: selectedDate?.date ? `${selectedDate.label === 'Today' ? 'Today' : selectedDate.label}, ${selectedDate.date}` : '',
+              time: selectedSlot,
+              address,
+              status: 'upcoming',
+              price: service?.price,
+              img: service?.img,
+              tech: { name: selectedTech?.name, rating: selectedTech?.rating, jobs: selectedTech?.jobs, phone: '+91 98200 00000' },
+              createdAt: new Date().toISOString(),
+            })
+            setStep(4)
+          }} className="flex-1 py-4 rounded-xl font-bold text-white bg-sky hover:bg-sky/90 transition">Confirm Booking</button>
         </div>
       </div>
     </div>
