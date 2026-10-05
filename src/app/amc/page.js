@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 const PLANS = [
@@ -79,10 +80,22 @@ const SCHEDULE_MONTHS = [
 export default function AMCPage() {
   const [selected, setSelected] = useState(null)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [paid, setPaid] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   function handleSelect(plan) {
     setSelected(plan)
+    setPaid(false)
     setShowConfirm(true)
+  }
+
+  function handlePay() {
+    setLoading(true)
+    setTimeout(() => {
+      setLoading(false)
+      setPaid(true)
+    }, 1500)
   }
 
   return (
@@ -160,30 +173,66 @@ export default function AMCPage() {
         ))}
       </div>
 
-      {/* Confirm modal */}
+      {/* Confirm / Success modal */}
       {showConfirm && selected && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowConfirm(false)}>
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => { if (!loading) setShowConfirm(false) }}>
           <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
-            <h3 className="font-extrabold text-xl text-gray-900 mb-1">Confirm {selected.name} Plan</h3>
-            <p className="text-gray-500 text-sm mb-5">Starting from today, valid for 1 year.</p>
-            <div className="bg-gray-50 rounded-2xl p-4 mb-5">
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600">Plan price</span>
-                <span className="font-semibold">₹{selected.price.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600">GST (18%)</span>
-                <span className="font-semibold">₹{Math.round(selected.price * 0.18)}</span>
-              </div>
-              <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between font-extrabold text-navy">
-                <span>Total</span>
-                <span>₹{Math.round(selected.price * 1.18).toLocaleString()}</span>
-              </div>
-            </div>
-            <button className="w-full py-4 bg-sky text-white font-bold rounded-2xl hover:bg-sky/90 transition mb-3">
-              Pay & Activate Plan
-            </button>
-            <button onClick={() => setShowConfirm(false)} className="w-full py-3 text-gray-500 text-sm font-semibold">Cancel</button>
+
+            {!paid ? (
+              <>
+                <h3 className="font-extrabold text-xl text-gray-900 mb-1">Confirm {selected.name} Plan</h3>
+                <p className="text-gray-500 text-sm mb-5">Starting from today, valid for 1 year.</p>
+                <div className="bg-gray-50 rounded-2xl p-4 mb-5">
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-gray-600">Plan price</span>
+                    <span className="font-semibold">₹{selected.price.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-gray-600">GST (18%)</span>
+                    <span className="font-semibold">₹{Math.round(selected.price * 0.18).toLocaleString()}</span>
+                  </div>
+                  <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between font-extrabold text-navy">
+                    <span>Total</span>
+                    <span>₹{Math.round(selected.price * 1.18).toLocaleString()}</span>
+                  </div>
+                </div>
+                <button onClick={handlePay} disabled={loading}
+                  className="w-full py-4 bg-sky text-white font-bold rounded-2xl hover:bg-sky/90 transition mb-3 flex items-center justify-center gap-2 disabled:opacity-70">
+                  {loading ? (
+                    <>
+                      <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                      </svg>
+                      Processing…
+                    </>
+                  ) : 'Pay & Activate Plan'}
+                </button>
+                <button onClick={() => setShowConfirm(false)} className="w-full py-3 text-gray-500 text-sm font-semibold">Cancel</button>
+              </>
+            ) : (
+              <>
+                <div className="text-center py-4">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-extrabold text-gray-900 mb-1">{selected.name} Plan Activated!</h3>
+                  <p className="text-gray-500 text-sm mb-5">Your plan is active. Valid till {new Date(Date.now() + 365*24*60*60*1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}.</p>
+                  <div className="bg-sky/5 rounded-2xl p-4 text-left mb-5 space-y-2 text-sm">
+                    <div className="flex justify-between"><span className="text-gray-500">Plan</span><span className="font-bold text-navy">{selected.name}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-500">Services/year</span><span className="font-semibold">{selected.services} visits</span></div>
+                    <div className="flex justify-between"><span className="text-gray-500">Amount paid</span><span className="font-semibold">₹{Math.round(selected.price * 1.18).toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-500">Plan ID</span><span className="font-mono text-xs font-semibold">AMC{Math.floor(Math.random()*900000+100000)}</span></div>
+                  </div>
+                  <button onClick={() => { setShowConfirm(false); router.push('/') }}
+                    className="w-full py-4 bg-navy text-white font-bold rounded-2xl hover:bg-navy/90 transition">
+                    Back to Home
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
