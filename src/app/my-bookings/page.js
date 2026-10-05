@@ -1,5 +1,6 @@
 'use client'
 import { useAuth } from '@/context/AuthContext'
+import { useTheme } from '@/context/ThemeContext'
 import { useToast } from '@/components/Toast'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
@@ -218,6 +219,7 @@ function getDates() {
 
 export default function MyBookingsPage() {
   const { user, hydrated, bookings: userBookings } = useAuth()
+  const { t } = useTheme()
   const showToast = useToast()
   const router = useRouter()
   const [tab, setTab] = useState('all')
@@ -268,14 +270,14 @@ export default function MyBookingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
-      <h1 className="text-xl font-bold text-gray-900">My Bookings</h1>
+      <h1 className="text-xl font-bold text-gray-900">{t.myBookings}</h1>
 
       {/* Live booking banner */}
       {ALL_BOOKINGS.some(b => b.status === 'live') && (
         <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl p-4 flex items-center gap-3 animate-pulse">
           <span className="text-2xl">🛵</span>
           <div className="flex-1">
-            <div className="text-white font-extrabold text-sm">Technician is on the way!</div>
+            <div className="text-white font-extrabold text-sm">{t.techOnWay}</div>
             <div className="text-white/80 text-xs mt-0.5">Arjun Mehta · ETA ~12 min · Track live below</div>
           </div>
           <div className="w-2 h-2 bg-white rounded-full" />
@@ -284,7 +286,7 @@ export default function MyBookingsPage() {
 
       {/* Tabs */}
       <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
-        {[['all', 'All'], ['upcoming', 'Upcoming'], ['completed', 'Completed'], ['cancelled', 'Cancelled']].map(([val, label]) => (
+        {[['all', t.tabAll], ['upcoming', t.tabUpcoming], ['completed', t.tabCompleted], ['cancelled', t.tabCancelled]].map(([val, label]) => (
           <button
             key={val}
             onClick={() => setTab(val)}
@@ -308,14 +310,14 @@ export default function MyBookingsPage() {
             {tab === 'upcoming' ? '🗓️' : tab === 'completed' ? '✅' : tab === 'cancelled' ? '🚫' : '📋'}
           </div>
           <div className="font-bold text-gray-700 text-lg mb-1">
-            {tab === 'upcoming' ? 'No upcoming bookings' : tab === 'completed' ? 'No completed services yet' : tab === 'cancelled' ? 'No cancelled bookings' : 'No bookings yet'}
+            {tab === 'upcoming' ? t.noUpcoming : tab === 'completed' ? t.noCompleted : tab === 'cancelled' ? t.noCancelled : t.noBookings}
           </div>
           <div className="text-sm text-gray-400 mb-5">
-            {tab === 'upcoming' ? 'Book a service and it will appear here.' : tab === 'completed' ? 'Your completed services will show here.' : tab === 'cancelled' ? 'Cancelled bookings will appear here.' : 'Your booking history will appear here.'}
+            {tab === 'upcoming' ? t.noUpcomingDesc : tab === 'completed' ? t.noCompletedDesc : tab === 'cancelled' ? t.noCancelledDesc : t.noBookingsDesc}
           </div>
           <button onClick={() => router.push('/all-services')}
             className="bg-sky text-white font-bold px-6 py-3 rounded-2xl hover:bg-sky/90 transition text-sm">
-            Browse services →
+            {t.browseServices}
           </button>
         </div>
       ) : null}
@@ -376,18 +378,18 @@ export default function MyBookingsPage() {
                       onClick={() => setTracking(tracking === b.id ? null : b.id)}
                       className="text-xs px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600"
                     >
-                      <span>📍</span> {tracking === b.id ? 'Hide map' : 'Track live'}
+                      <span>📍</span> {tracking === b.id ? t.hideMap : t.trackLive}
                     </button>
                   )}
                   {b.status === 'upcoming' && (
                     <>
                       <button onClick={() => { setRescheduleBooking(b); setRescheduleDate(null); setRescheduleSlot(null) }}
                         className="text-xs px-3 py-1.5 border border-sky text-sky rounded-lg font-semibold hover:bg-sky/10 transition">
-                        Reschedule
+                        {t.reschedule}
                       </button>
                       <button onClick={() => { setCancelBooking(b); setCancelReason('') }}
                         className="text-xs px-3 py-1.5 border border-red-200 text-red-500 rounded-lg font-semibold hover:bg-red-50 transition">
-                        Cancel
+                        {t.cancel}
                       </button>
                     </>
                   )}
@@ -402,22 +404,22 @@ export default function MyBookingsPage() {
                         }
                       }} className="text-xs px-3 py-1.5 border border-gray-200 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 transition flex items-center gap-1">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-                        Share
+                        {t.share}
                       </button>
                       <button onClick={() => setReportBooking(b)} className="text-xs px-3 py-1.5 border border-navy text-navy rounded-lg font-semibold hover:bg-navy/5 transition flex items-center gap-1">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                        Report
+                        {t.report}
                       </button>
                       {!rated[b.id] ? (
                         <button onClick={() => setRatingBooking(b)} className="text-xs px-3 py-1.5 bg-amber-500 text-white rounded-lg font-semibold hover:bg-amber-600 transition flex items-center gap-1">
-                          ⭐ Rate
+                          ⭐ {t.rate}
                         </button>
                       ) : (
-                        <span className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg font-semibold">✓ Rated</span>
+                        <span className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg font-semibold">{t.rated}</span>
                       )}
                       <button onClick={() => setBookAgainService({ name: b.service, img: b.img, price: b.price, category: b.appliance })}
                         className="text-xs px-3 py-1.5 bg-navy text-white rounded-lg font-semibold hover:bg-navy/90 transition">
-                        Book again
+                        {t.bookAgain}
                       </button>
                     </>
                   )}

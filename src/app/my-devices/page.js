@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
+import { useTheme } from '@/context/ThemeContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -62,6 +63,7 @@ function WarrantyRing({ pctUsed, daysLeft, expiry }) {
 
 export default function MyDevicesPage() {
   const { user, hydrated } = useAuth()
+  const { t } = useTheme()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [devices, setDevices] = useState([
@@ -91,11 +93,11 @@ export default function MyDevicesPage() {
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">My Devices</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{devices.length} appliance{devices.length !== 1 ? 's' : ''} registered</p>
+          <h1 className="text-xl font-bold text-gray-900">{t.myDevices}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{devices.length} {devices.length !== 1 ? t.appliances : t.appliance} {t.registered}</p>
         </div>
         <button onClick={() => setShowAdd(true)} className="bg-sky text-white text-sm font-bold px-4 py-2.5 rounded-xl hover:bg-sky/90 transition flex items-center gap-2">
-          <span className="text-lg leading-none">+</span> Add Device
+          <span className="text-lg leading-none">+</span> {t.addDevice.replace('+ ', '')}
         </button>
       </div>
 
@@ -114,12 +116,12 @@ export default function MyDevicesPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-gray-900">{device.brand} {device.model}</span>
-                    {isExpired && <span className="text-xs bg-red-100 text-red-600 font-semibold px-2 py-0.5 rounded-full">Warranty Expired</span>}
-                    {isExpiring && <span className="text-xs bg-yellow-100 text-yellow-700 font-semibold px-2 py-0.5 rounded-full">Expiring in {ws.daysLeft}d</span>}
-                    {ws && !isExpired && !isExpiring && <span className="text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">Under Warranty</span>}
+                    {isExpired && <span className="text-xs bg-red-100 text-red-600 font-semibold px-2 py-0.5 rounded-full">{t.warrantyExpired}</span>}
+                    {isExpiring && <span className="text-xs bg-yellow-100 text-yellow-700 font-semibold px-2 py-0.5 rounded-full">⏰ {ws.daysLeft}d</span>}
+                    {ws && !isExpired && !isExpiring && <span className="text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">{t.underWarranty}</span>}
                   </div>
                   <div className="text-sm text-gray-500 mt-0.5">{device.type}</div>
-                  {ws && <div className="text-xs text-gray-400 mt-0.5">Warranty {isExpired ? 'expired' : 'till'} {ws.expiry}</div>}
+                  {ws && <div className="text-xs text-gray-400 mt-0.5">{isExpired ? t.warrantyExpiredOn : t.warrantyTill} {ws.expiry}</div>}
                 </div>
                 <svg className={`w-5 h-5 text-gray-400 transition-transform ${selectedDevice?.id === device.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
               </button>
@@ -150,7 +152,7 @@ export default function MyDevicesPage() {
 
                   {/* Service history timeline */}
                   <div className="mt-5">
-                    <h3 className="text-sm font-bold text-gray-900 mb-3">Service history</h3>
+                    <h3 className="text-sm font-bold text-gray-900 mb-3">{t.serviceHistory}</h3>
                     <div className="relative">
                       {/* Vertical line */}
                       <div className="absolute left-4 top-3 bottom-3 w-0.5 bg-gray-200" />
@@ -177,7 +179,7 @@ export default function MyDevicesPage() {
                         <div className="flex gap-4 items-start relative">
                           <div className="w-8 h-8 rounded-full bg-navy/10 flex items-center justify-center flex-shrink-0 z-10 text-sm">📦</div>
                           <div className="flex-1 bg-gray-50 rounded-xl px-4 py-3">
-                            <div className="font-semibold text-gray-700 text-sm">Device purchased</div>
+                            <div className="font-semibold text-gray-700 text-sm">{t.devicePurchased}</div>
                             <div className="text-xs text-gray-400 mt-0.5">
                               {device.purchaseDate ? new Date(device.purchaseDate).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : 'Date not set'}
                             </div>
@@ -189,8 +191,8 @@ export default function MyDevicesPage() {
 
                   {/* Actions */}
                   <div className="mt-4 flex gap-2">
-                    <Link href="/all-services" className="flex-1 text-center py-2.5 rounded-xl bg-sky text-white text-sm font-bold hover:bg-sky/90 transition">Book Service</Link>
-                    <button onClick={() => removeDevice(device.id)} className="px-4 py-2.5 rounded-xl border-2 border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50 transition">Remove</button>
+                    <Link href="/all-services" className="flex-1 text-center py-2.5 rounded-xl bg-sky text-white text-sm font-bold hover:bg-sky/90 transition">{t.bookService}</Link>
+                    <button onClick={() => removeDevice(device.id)} className="px-4 py-2.5 rounded-xl border-2 border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50 transition">{t.remove}</button>
                   </div>
                 </div>
               )}
@@ -203,7 +205,7 @@ export default function MyDevicesPage() {
             <div className="text-5xl mb-3">📦</div>
             <div className="font-semibold text-gray-600">No devices added yet</div>
             <p className="text-sm mt-1">Add your appliances to track warranty & service history</p>
-            <button onClick={() => setShowAdd(true)} className="mt-4 bg-sky text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-sky/90 transition">+ Add Device</button>
+            <button onClick={() => setShowAdd(true)} className="mt-4 bg-sky text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-sky/90 transition">{t.addDevice}</button>
           </div>
         )}
       </div>

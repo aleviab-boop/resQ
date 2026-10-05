@@ -26,17 +26,11 @@ export default function Navbar() {
 
   if (pathname === '/login') return null
 
-  const LABELS = {
-    en: { services: 'All services', care: 'Buy resQ care plan', devices: 'My devices', locate: 'Locate us', myBookings: 'My Bookings', profile: 'My Profile', notifications: 'Notifications', cart: 'Cart', logout: 'Logout' },
-    hi: { services: 'सभी सेवाएं', care: 'resQ केयर प्लान', devices: 'मेरे उपकरण', locate: 'हमें खोजें', myBookings: 'मेरी बुकिंग', profile: 'मेरी प्रोफ़ाइल', notifications: 'सूचनाएं', cart: 'कार्ट', logout: 'लॉगआउट' },
-  }
-  const L = LABELS[lang] || LABELS.en
-
   const links = [
-    { href: '/all-services', label: L.services },
-    { href: '/care-plan', label: L.care },
-    { href: '/my-devices', label: L.devices },
-    { href: '/locate', label: L.locate },
+    { href: '/all-services', label: t.navServices },
+    { href: '/care-plan', label: t.navCare },
+    { href: '/my-devices', label: t.navDevices },
+    { href: '/locate', label: t.navLocate },
   ]
 
   function handleLogout() {
@@ -117,19 +111,19 @@ export default function Navbar() {
                 <div className="absolute right-0 top-12 bg-white rounded-2xl shadow-2xl w-48 py-2 z-50 text-sm overflow-hidden">
                   <Link href="/profile" onClick={() => setDropdownOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-800 font-medium">
-                    <span>👤</span> {L.profile}
+                    <span>👤</span> {t.navProfile}
                   </Link>
                   <Link href="/my-bookings" onClick={() => setDropdownOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-800 font-medium">
-                    <span>📋</span> {L.myBookings}
+                    <span>📋</span> {t.navMyBookings}
                   </Link>
                   <Link href="/Notifications" onClick={() => setDropdownOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-800 font-medium">
-                    <span>🔔</span> {L.notifications}
+                    <span>🔔</span> {t.navNotifications}
                   </Link>
                   <Link href="/CartDetails" onClick={() => setDropdownOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-800 font-medium">
-                    <span>🛒</span> {L.cart} {cart.length > 0 && <span className="ml-auto bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">{cart.length}</span>}
+                    <span>🛒</span> {t.navCart} {cart.length > 0 && <span className="ml-auto bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">{cart.length}</span>}
                   </Link>
                   <hr className="my-1 border-gray-100" />
                   {/* Dark mode toggle */}
@@ -157,7 +151,7 @@ export default function Navbar() {
                   <hr className="my-1 border-gray-100" />
                   <button onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-red-500 font-medium">
-                    <span>🚪</span> {L.logout}
+                    <span>🚪</span> {t.navLogout}
                   </button>
                 </div>
               )}

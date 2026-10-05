@@ -3,6 +3,7 @@ import ServiceCard from '@/components/ServiceCard'
 import { SkeletonGrid } from '@/components/SkeletonCard'
 import { allAppliances, maintenanceServices, installationServices } from '@/lib/data'
 import { useState, useEffect } from 'react'
+import { useTheme } from '@/context/ThemeContext'
 
 const APPLIANCE_KEYWORDS = {
   'Air Conditioner': ['ac', 'split ac', 'window ac', 'air conditioner'],
@@ -21,13 +22,14 @@ function matchesAppliance(service, appliance) {
 }
 
 export default function AllServices() {
+  const { t } = useTheme()
   const [activeAppliance, setActiveAppliance] = useState(null)
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 800)
-    return () => clearTimeout(t)
+    const timer = setTimeout(() => setLoading(false), 800)
+    return () => clearTimeout(timer)
   }, [])
 
   const allMaintenance = maintenanceServices
@@ -66,7 +68,7 @@ export default function AllServices() {
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Search services (e.g. AC jet, fridge cleaning...)"
+          placeholder={t.searchServices}
           className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-gray-200 focus:border-sky outline-none text-sm bg-white shadow-sm"
         />
         {search && (
@@ -76,8 +78,8 @@ export default function AllServices() {
 
       {/* All appliances grid */}
       <section>
-        <h1 className="text-xl font-bold text-gray-900 mb-2">All appliances</h1>
-        <p className="text-sm text-gray-400 mb-5">Tap an appliance to filter services</p>
+        <h1 className="text-xl font-bold text-gray-900 mb-2">{t.allAppliances}</h1>
+        <p className="text-sm text-gray-400 mb-5">{t.tapToFilter}</p>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
           {allAppliances.map((a) => (
             <button
@@ -100,12 +102,12 @@ export default function AllServices() {
         </div>
         {activeAppliance && (
           <div className="mt-4 flex items-center gap-3">
-            <span className="text-sm text-gray-600">Showing services for <b className="text-navy">{activeAppliance}</b></span>
+            <span className="text-sm text-gray-600">{t.showingFor} <b className="text-navy">{activeAppliance}</b></span>
             <button
               onClick={() => setActiveAppliance(null)}
               className="text-xs text-sky font-semibold border border-sky/30 px-3 py-1 rounded-full hover:bg-sky/5 transition"
             >
-              Clear filter ×
+              {t.clearFilters} ×
             </button>
           </div>
         )}
@@ -116,7 +118,7 @@ export default function AllServices() {
 
         {/* Maintenance */}
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Maintenance services</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">{t.maintenanceServices}</h2>
           {loading ? <SkeletonGrid count={8} /> : filteredMaintenance.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredMaintenance.map(s => <ServiceCard key={s.name} service={s} />)}
@@ -124,16 +126,16 @@ export default function AllServices() {
           ) : (
             <div className="bg-gray-50 rounded-2xl py-12 text-center">
               <div className="text-5xl mb-3">🔍</div>
-              <div className="font-semibold text-gray-500 mb-1">No services found</div>
+              <div className="font-semibold text-gray-500 mb-1">{t.noResults}</div>
               <div className="text-xs text-gray-400">{search ? `No results for "${search}"` : `No maintenance services for ${activeAppliance}`}</div>
-              <button onClick={() => { setSearch(''); setActiveAppliance(null) }} className="mt-4 text-sky text-sm font-semibold">Clear filters</button>
+              <button onClick={() => { setSearch(''); setActiveAppliance(null) }} className="mt-4 text-sky text-sm font-semibold">{t.clearFilters}</button>
             </div>
           )}
         </section>
 
         {/* Installation */}
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Installation services</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">{t.installationServices}</h2>
           {filteredInstallation.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredInstallation.map(s => <ServiceCard key={s.name} service={s} />)}
@@ -141,7 +143,7 @@ export default function AllServices() {
           ) : (
             <div className="bg-gray-50 rounded-2xl py-10 text-center text-gray-400">
               <div className="text-3xl mb-2">🔍</div>
-              <div className="text-sm">No installation services found for {activeAppliance}</div>
+              <div className="text-sm">{t.noResults} for {activeAppliance}</div>
             </div>
           )}
         </section>

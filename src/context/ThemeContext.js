@@ -1,43 +1,8 @@
 'use client'
 import { createContext, useContext, useState, useEffect } from 'react'
+import T from '@/lib/translations'
 
 const ThemeContext = createContext({})
-
-// Hindi translations for key UI strings
-const TRANSLATIONS = {
-  en: {
-    home: 'Home',
-    services: 'All Services',
-    myBookings: 'My Bookings',
-    myDevices: 'My Devices',
-    profile: 'Profile',
-    carePlan: 'Care Plan',
-    locate: 'Locate Centre',
-    login: 'Login',
-    logout: 'Logout',
-    bookService: 'Book a Service',
-    browseServices: 'Browse Services',
-    darkMode: 'Dark',
-    lightMode: 'Light',
-    language: 'हिं',
-  },
-  hi: {
-    home: 'होम',
-    services: 'सभी सेवाएं',
-    myBookings: 'मेरी बुकिंग',
-    myDevices: 'मेरे उपकरण',
-    profile: 'प्रोफ़ाइल',
-    carePlan: 'केयर प्लान',
-    locate: 'सेंटर खोजें',
-    login: 'लॉगिन',
-    logout: 'लॉगआउट',
-    bookService: 'सेवा बुक करें',
-    browseServices: 'सेवाएं देखें',
-    darkMode: 'डार्क',
-    lightMode: 'लाइट',
-    language: 'EN',
-  },
-}
 
 export function ThemeProvider({ children }) {
   const [dark, setDark] = useState(false)
@@ -68,7 +33,7 @@ export function ThemeProvider({ children }) {
   function toggleDark() { setDark(d => !d) }
   function toggleLang() { setLang(l => l === 'en' ? 'hi' : 'en') }
 
-  const t = TRANSLATIONS[lang]
+  const t = T[lang] || T.en
 
   return (
     <ThemeContext.Provider value={{ dark, toggleDark, lang, toggleLang, t }}>

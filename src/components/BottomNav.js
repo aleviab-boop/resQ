@@ -1,11 +1,12 @@
 'use client'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { useTheme } from '@/context/ThemeContext'
 import { useState, useEffect } from 'react'
 
-const NAV_ITEMS = [
+const NAV_PATHS = [
   {
-    label: 'Home',
+    key: 'home',
     path: '/',
     icon: (active) => (
       <svg className={`w-5 h-5 ${active ? 'text-sky' : 'text-gray-400'}`} fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -14,7 +15,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    label: 'Services',
+    key: 'services',
     path: '/all-services',
     icon: (active) => (
       <svg className={`w-5 h-5 ${active ? 'text-sky' : 'text-gray-400'}`} fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -23,7 +24,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    label: 'Bookings',
+    key: 'bookings',
     path: '/my-bookings',
     icon: (active) => (
       <svg className={`w-5 h-5 ${active ? 'text-sky' : 'text-gray-400'}`} fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -32,7 +33,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    label: 'Profile',
+    key: 'profile',
     path: '/profile',
     icon: (active) => (
       <svg className={`w-5 h-5 ${active ? 'text-sky' : 'text-gray-400'}`} fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -42,10 +43,16 @@ const NAV_ITEMS = [
   },
 ]
 
+const BOTTOM_LABELS = {
+  en: { home: 'Home', services: 'Services', bookings: 'Bookings', profile: 'Profile' },
+  hi: { home: 'होम', services: 'सेवाएं', bookings: 'बुकिंग', profile: 'प्रोफ़ाइल' },
+}
+
 export default function BottomNav() {
   const pathname = usePathname()
   const router = useRouter()
   const { user } = useAuth()
+  const { lang } = useTheme()
   const [isLoginPage, setIsLoginPage] = useState(true)
 
   useEffect(() => {
@@ -54,10 +61,12 @@ export default function BottomNav() {
 
   if (!user || isLoginPage) return null
 
+  const L = BOTTOM_LABELS[lang] || BOTTOM_LABELS.en
+
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[200] bg-white border-t border-gray-200 shadow-lg safe-area-inset-bottom">
       <div className="flex items-center justify-around px-2 pt-2 pb-3">
-        {NAV_ITEMS.map(item => {
+        {NAV_PATHS.map(item => {
           const active = pathname === item.path
           return (
             <button
@@ -67,7 +76,7 @@ export default function BottomNav() {
             >
               {item.icon(active)}
               <span className={`text-[10px] font-semibold ${active ? 'text-sky' : 'text-gray-400'}`}>
-                {item.label}
+                {L[item.key]}
               </span>
               {active && (
                 <div className="w-1 h-1 bg-sky rounded-full" />

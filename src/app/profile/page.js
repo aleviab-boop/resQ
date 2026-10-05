@@ -1,5 +1,6 @@
 'use client'
 import { useAuth } from '@/context/AuthContext'
+import { useTheme } from '@/context/ThemeContext'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
@@ -10,6 +11,7 @@ const DEFAULT_ADDRESSES = [
 
 export default function ProfilePage() {
   const { user, logout, hydrated, updateUser } = useAuth()
+  const { t } = useTheme()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [addresses, setAddresses] = useState(DEFAULT_ADDRESSES)
@@ -58,11 +60,11 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-      <h1 className="text-xl font-bold text-gray-900">My Profile</h1>
+      <h1 className="text-xl font-bold text-gray-900">{t.myProfile}</h1>
 
       {savedFeedback && (
         <div className="bg-green-50 border border-green-200 rounded-2xl px-4 py-3 flex items-center gap-2 text-green-700 text-sm font-semibold">
-          <span>✓</span> Profile updated!
+          {t.profileUpdated}
         </div>
       )}
 
@@ -82,25 +84,25 @@ export default function ProfilePage() {
                   onKeyDown={e => e.key === 'Enter' && saveName()}
                   autoFocus
                 />
-                <button onClick={saveName} className="text-sky text-sm font-bold flex-shrink-0 bg-sky/10 px-3 py-1 rounded-lg">Save</button>
+                <button onClick={saveName} className="text-sky text-sm font-bold flex-shrink-0 bg-sky/10 px-3 py-1 rounded-lg">{t.save}</button>
                 <button onClick={() => { setEditingName(false); setName(user.name) }} className="text-gray-400 text-sm flex-shrink-0">✕</button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
                 <div className="text-lg font-bold text-gray-900 truncate">{user.name}</div>
                 <button onClick={() => setEditingName(true)} className="text-sky text-xs font-semibold flex-shrink-0 border border-sky/30 px-2 py-0.5 rounded-lg hover:bg-sky/5 transition">
-                  Edit
+                  {t.edit}
                 </button>
               </div>
             )}
             <div className="text-sm text-gray-500 mt-0.5">{user.phone}</div>
-            <div className="text-xs text-gray-400 mt-1">Member since Sep 2026 · resQ Plus</div>
+            <div className="text-xs text-gray-400 mt-1">{t.memberSince}</div>
           </div>
         </div>
 
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-3 mt-5 border-t border-gray-100 pt-5">
-          {[['5', 'Bookings'], ['2', 'Devices'], ['1', 'Care Plan']].map(([val, label]) => (
+          {[['5', t.navMyBookings], ['2', t.navDevices], ['1', t.navCare]].map(([val, label]) => (
             <div key={label} className="text-center">
               <div className="text-xl font-extrabold text-navy">{val}</div>
               <div className="text-xs text-gray-400 font-medium mt-0.5">{label}</div>
@@ -112,9 +114,9 @@ export default function ProfilePage() {
       {/* Saved addresses */}
       <div className="bg-white rounded-2xl shadow-card p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold text-gray-900">Saved addresses</h2>
+          <h2 className="font-bold text-gray-900">{t.savedAddresses}</h2>
           <button onClick={() => setShowAddAddress(v => !v)} className="text-sky text-sm font-semibold">
-            {showAddAddress ? 'Cancel' : '+ Add new'}
+            {showAddAddress ? '✕' : t.addNew}
           </button>
         </div>
 
@@ -142,7 +144,7 @@ export default function ProfilePage() {
             />
             <button onClick={addAddress} disabled={!newAddr.line || !newAddr.city}
               className={`w-full py-3 rounded-xl font-bold text-sm transition ${newAddr.line && newAddr.city ? 'bg-sky text-white hover:bg-sky/90' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}>
-              Save address
+              {t.save}
             </button>
           </div>
         )}
@@ -162,7 +164,7 @@ export default function ProfilePage() {
                 <div className="text-xs text-gray-400">{addr.city}</div>
                 {!addr.default && (
                   <button onClick={() => setDefault(addr.id)} className="text-xs text-sky font-semibold mt-1 hover:underline">
-                    Set as default
+                    {t.setDefault}
                   </button>
                 )}
               </div>
@@ -175,10 +177,10 @@ export default function ProfilePage() {
       {/* Quick links */}
       <div className="bg-white rounded-2xl shadow-card divide-y divide-gray-100">
         {[
-          { icon: '📋', label: 'My Bookings', href: '/my-bookings' },
-          { icon: '📱', label: 'My Devices', href: '/my-devices' },
-          { icon: '🔔', label: 'Notifications', href: '/Notifications' },
-          { icon: '🛒', label: 'Cart', href: '/CartDetails' },
+          { icon: '📋', label: t.navMyBookings, href: '/my-bookings' },
+          { icon: '📱', label: t.navDevices, href: '/my-devices' },
+          { icon: '🔔', label: t.navNotifications, href: '/Notifications' },
+          { icon: '🛒', label: t.navCart, href: '/CartDetails' },
           { icon: '🛡️', label: 'Care Plan', href: '/care-plan' },
           { icon: '📄', label: 'Terms of Service', href: '/terms' },
         ].map(item => (
@@ -196,7 +198,7 @@ export default function ProfilePage() {
         onClick={handleLogout}
         className="w-full py-4 rounded-2xl border-2 border-red-200 text-red-500 font-bold text-sm hover:bg-red-50 transition"
       >
-        🚪 Logout
+        🚪 {t.navLogout}
       </button>
     </div>
   )

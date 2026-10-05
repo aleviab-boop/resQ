@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
+import { useTheme } from '@/context/ThemeContext'
 import { useRouter } from 'next/navigation'
 
 const TECHNICIANS = [
@@ -108,6 +109,7 @@ function applyDiscount(price, couponData) {
 
 export default function BookingFlow({ service, onClose }) {
   const { user, addBooking } = useAuth()
+  const { t } = useTheme()
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [selectedDate, setSelectedDate] = useState(null)
@@ -127,7 +129,7 @@ export default function BookingFlow({ service, onClose }) {
       setAppliedCoupon({ code, ...VALID_COUPONS[code] })
       setCouponError('')
     } else {
-      setCouponError('Invalid coupon code')
+      setCouponError(t.invalidCoupon)
       setAppliedCoupon(null)
     }
   }
@@ -140,8 +142,8 @@ export default function BookingFlow({ service, onClose }) {
       <div className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-gray-100">
           <div>
-            <div className="text-xs text-sky font-semibold uppercase tracking-wide">Step 1 of 3</div>
-            <h2 className="font-bold text-gray-900 text-lg">Pick a date & time</h2>
+            <div className="text-xs text-sky font-semibold uppercase tracking-wide">{t.step1}</div>
+            <h2 className="font-bold text-gray-900 text-lg">{t.pickDateTime}</h2>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl">×</button>
         </div>
@@ -153,15 +155,15 @@ export default function BookingFlow({ service, onClose }) {
           >
             <span className="text-3xl">⚡</span>
             <div className="text-left">
-              <div className="font-extrabold text-base">Need it today?</div>
-              <div className="text-xs opacity-90 mt-0.5">Book urgent slot · Technician reaches in ~2 hrs</div>
+              <div className="font-extrabold text-base">{t.needToday}</div>
+              <div className="text-xs opacity-90 mt-0.5">{t.urgentDesc}</div>
             </div>
             <span className="ml-auto text-sm font-bold bg-white/20 px-2 py-1 rounded-lg">On Demand</span>
           </button>
         </div>
 
         <div className="px-6 pt-1 pb-2">
-          <p className="text-sm font-semibold text-gray-700 mb-3">Or pick a date & time</p>
+          <p className="text-sm font-semibold text-gray-700 mb-3">{t.pickDate}</p>
           <div className="flex gap-2 overflow-x-auto pb-2">
             {dates.map(d => (
               <button key={d.full} onClick={() => setSelectedDate(d)}
@@ -176,7 +178,7 @@ export default function BookingFlow({ service, onClose }) {
         </div>
 
         <div className="px-6 pt-3 pb-6">
-          <p className="text-sm font-semibold text-gray-700 mb-3">Select time slot</p>
+          <p className="text-sm font-semibold text-gray-700 mb-3">{t.selectSlot}</p>
           <div className="grid grid-cols-2 gap-2">
             {TIME_SLOTS.map(slot => {
               const full = slot.slots === 0
@@ -192,7 +194,7 @@ export default function BookingFlow({ service, onClose }) {
                     : 'border-gray-200 text-gray-700 hover:border-sky/50'
                   }`}>
                   <div>{slot.label}</div>
-                  {full && <div className="text-xs text-gray-400 font-normal mt-0.5">Fully booked</div>}
+                  {full && <div className="text-xs text-gray-400 font-normal mt-0.5">{t.fullyBooked}</div>}
                   {!full && scarce && <div className="text-xs text-orange-500 font-semibold mt-0.5">Only 1 slot left!</div>}
                   {!full && slot.slots === 2 && <div className="text-xs text-amber-500 font-semibold mt-0.5">2 slots left</div>}
                 </button>
@@ -208,7 +210,7 @@ export default function BookingFlow({ service, onClose }) {
             className={`w-full py-4 rounded-xl font-bold text-white transition ${
               selectedDate && selectedSlot ? 'bg-sky hover:bg-sky/90' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}>
-            Continue →
+            {t.continueBtn}
           </button>
         </div>
       </div>
@@ -221,8 +223,8 @@ export default function BookingFlow({ service, onClose }) {
       <div className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-gray-100">
           <div>
-            <div className="text-xs text-sky font-semibold uppercase tracking-wide">Step 2 of 3</div>
-            <h2 className="font-bold text-gray-900 text-lg">Choose your technician</h2>
+            <div className="text-xs text-sky font-semibold uppercase tracking-wide">{t.step2}</div>
+            <h2 className="font-bold text-gray-900 text-lg">{t.chooseTech}</h2>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl">×</button>
         </div>
@@ -274,7 +276,7 @@ export default function BookingFlow({ service, onClose }) {
           <button disabled={!selectedTech} onClick={() => setStep(3)}
             className={`flex-1 py-4 rounded-xl font-bold text-white transition ${
               selectedTech ? 'bg-sky hover:bg-sky/90' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            }`}>Continue →</button>
+            }`}>{t.continueBtn}</button>
         </div>
       </div>
     </div>
@@ -286,8 +288,8 @@ export default function BookingFlow({ service, onClose }) {
       <div className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-gray-100">
           <div>
-            <div className="text-xs text-sky font-semibold uppercase tracking-wide">Step 3 of 3</div>
-            <h2 className="font-bold text-gray-900 text-lg">Confirm booking</h2>
+            <div className="text-xs text-sky font-semibold uppercase tracking-wide">{t.step3}</div>
+            <h2 className="font-bold text-gray-900 text-lg">{t.confirmBooking}</h2>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl">×</button>
         </div>
@@ -311,12 +313,12 @@ export default function BookingFlow({ service, onClose }) {
                 type="text"
                 value={couponCode}
                 onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError('') }}
-                placeholder="🎟️ Have a coupon? Try RESQ50"
+                placeholder={t.couponPlaceholder}
                 className="flex-1 border-2 border-dashed border-sky/40 bg-sky/5 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-sky font-mono tracking-wider"
               />
               <button onClick={applyCoupon} disabled={!couponCode.trim()}
                 className={`px-4 py-2.5 rounded-xl font-bold text-sm transition ${couponCode.trim() ? 'bg-sky text-white hover:bg-sky/90' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}>
-                Apply
+                {t.applyBtn}
               </button>
             </div>
           )}
@@ -347,7 +349,7 @@ export default function BookingFlow({ service, onClose }) {
 
           {/* Address */}
           <div>
-            <p className="text-sm font-semibold text-gray-700 mb-2">Service address</p>
+            <p className="text-sm font-semibold text-gray-700 mb-2">{t.serviceAddress}</p>
             <div className="border-2 border-gray-200 rounded-xl p-4 text-sm text-gray-700 flex justify-between items-start">
               <span>{address}</span>
               <button className="text-sky text-xs font-semibold ml-2 flex-shrink-0">Change</button>
@@ -356,16 +358,16 @@ export default function BookingFlow({ service, onClose }) {
 
           {/* Price summary */}
           <div className="bg-navy/5 rounded-2xl p-4 space-y-2 text-sm">
-            <div className="flex justify-between text-gray-600"><span>Service charge</span><span>{service?.price}</span></div>
+            <div className="flex justify-between text-gray-600"><span>{t.serviceCharge}</span><span>{service?.price}</span></div>
             {appliedCoupon && (
               <div className="flex justify-between text-green-600 font-semibold">
                 <span>Discount ({appliedCoupon.code})</span>
                 <span>– saved!</span>
               </div>
             )}
-            <div className="flex justify-between text-gray-600"><span>Visit fee</span><span className="text-green-600 font-semibold">FREE</span></div>
+            <div className="flex justify-between text-gray-600"><span>{t.visitFee}</span><span className="text-green-600 font-semibold">{t.free}</span></div>
             <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
-              <span>Total (pay after service)</span>
+              <span>{t.total}</span>
               <span className={appliedCoupon ? 'text-green-600' : ''}>{finalPrice}</span>
             </div>
           </div>
@@ -388,7 +390,7 @@ export default function BookingFlow({ service, onClose }) {
               createdAt: new Date().toISOString(),
             })
             setStep(4)
-          }} className="flex-1 py-4 rounded-xl font-bold text-white bg-sky hover:bg-sky/90 transition">Confirm Booking</button>
+          }} className="flex-1 py-4 rounded-xl font-bold text-white bg-sky hover:bg-sky/90 transition">{t.confirmBtn}</button>
         </div>
       </div>
     </div>
@@ -406,10 +408,10 @@ export default function BookingFlow({ service, onClose }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/>
               </svg>
             </div>
-            <h2 className="text-xl font-extrabold text-gray-900 mb-1">Booking Confirmed! 🎉</h2>
-            <p className="text-gray-500 text-sm">Your technician will arrive at the scheduled time.</p>
+            <h2 className="text-xl font-extrabold text-gray-900 mb-1">{t.bookingConfirmed}</h2>
+            <p className="text-gray-500 text-sm">{t.techArrival}</p>
             <div className="mt-3 bg-gray-50 rounded-xl px-4 py-2 inline-block">
-              <span className="text-xs text-gray-500">Booking ID</span>
+              <span className="text-xs text-gray-500">{t.bookingId}</span>
               <div className="font-bold text-navy text-sm">{bookingId}</div>
             </div>
           </div>

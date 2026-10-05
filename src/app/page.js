@@ -1,3 +1,4 @@
+'use client'
 import LocationBar from '@/components/LocationBar'
 import OfferCarousel from '@/components/OfferCarousel'
 import SearchBar from '@/components/SearchBar'
@@ -7,8 +8,10 @@ import BundleDeals from '@/components/BundleDeals'
 import DashboardWidgets from '@/components/DashboardWidgets'
 import Link from 'next/link'
 import { mainAppliances, maintenanceServices, installationServices, testimonialVideos } from '@/lib/data'
+import { useTheme } from '@/context/ThemeContext'
 
 export default function Dashboard() {
+  const { t } = useTheme()
   return (
     <div>
       <LocationBar />
@@ -19,8 +22,10 @@ export default function Dashboard() {
 
         {/* Greeting */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 leading-tight">Hello,<br />Welcome to Reliance resQ</h1>
-          <p className="text-gray-500 text-sm mt-2">Your trusted expert for complete electronics care.</p>
+          <h1 className="text-3xl font-bold text-gray-900 leading-tight">
+            {t.hello}<br />{t.welcome}
+          </h1>
+          <p className="text-gray-500 text-sm mt-2">{t.tagline}</p>
         </div>
 
         {/* Dashboard Widgets — active booking + warranty nudge */}
@@ -33,7 +38,7 @@ export default function Dashboard() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-gray-900">Repair &amp; service</h2>
-            <Link href="/all-services" className="text-sm text-sky font-semibold">View all</Link>
+            <Link href="/all-services" className="text-sm text-sky font-semibold">{t.viewAll}</Link>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
             {mainAppliances.map((a) => (
@@ -73,8 +78,8 @@ export default function Dashboard() {
         {/* Maintenance Services */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">Maintenance services</h2>
-            <Link href="/all-services" className="text-sm text-sky font-semibold">View all</Link>
+            <h2 className="text-lg font-bold text-gray-900">{t.topMaintenance}</h2>
+            <Link href="/all-services" className="text-sm text-sky font-semibold">{t.viewAll}</Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {maintenanceServices.map(s => <ServiceCard key={s.name} service={s} />)}
@@ -84,8 +89,8 @@ export default function Dashboard() {
         {/* Installation Services */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">Installation services</h2>
-            <Link href="/all-services" className="text-sm text-sky font-semibold">View all</Link>
+            <h2 className="text-lg font-bold text-gray-900">{t.topInstallation}</h2>
+            <Link href="/all-services" className="text-sm text-sky font-semibold">{t.viewAll}</Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {installationServices.map(s => <ServiceCard key={s.name} service={s} />)}
