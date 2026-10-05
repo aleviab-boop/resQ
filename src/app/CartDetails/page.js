@@ -5,16 +5,16 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 export default function CartPage() {
-  const { user, cart, removeFromCart } = useAuth()
+  const { user, cart, removeFromCart, hydrated } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
-
-  useEffect(() => { setMounted(true) }, [])
   const [orderPlaced, setOrderPlaced] = useState(false)
 
+  useEffect(() => { setMounted(true) }, [])
+
   useEffect(() => {
-    if (!user) router.push('/login')
-  }, [user, router])
+    if (hydrated && !user) router.push('/login')
+  }, [hydrated, user, router])
 
   if (!hydrated || !user) return null
 
