@@ -5,6 +5,8 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import FaqBot from '@/components/FaqBot'
 import Onboarding from '@/components/Onboarding'
+import BottomNav from '@/components/BottomNav'
+import { ThemeProvider } from '@/context/ThemeContext'
 
 export const metadata = {
   title: 'Reliance resQ – Expert Home Appliance Care',
@@ -20,15 +22,18 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
       </head>
       <body>
+        <ThemeProvider>
         <AuthProvider>
           <ToastProvider>
             <Navbar />
-            <main>{children}</main>
+            <main className="pb-16 md:pb-0">{children}</main>
             <Footer />
             <FaqBot />
             <Onboarding />
+            <BottomNav />
           </ToastProvider>
         </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

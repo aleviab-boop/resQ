@@ -5,6 +5,30 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
 import ServiceReport from '@/components/ServiceReport'
 import RatingModal from '@/components/RatingModal'
+import BookingFlow from '@/components/BookingFlow'
+
+function SkeletonBookingCard() {
+  return (
+    <div className="bg-white rounded-2xl shadow-card overflow-hidden animate-pulse">
+      <div className="flex gap-4 p-4">
+        <div className="w-16 h-16 rounded-xl bg-gray-200 flex-shrink-0" />
+        <div className="flex-1 space-y-2 pt-1">
+          <div className="h-3 bg-gray-200 rounded w-3/4" />
+          <div className="h-3 bg-gray-100 rounded w-1/3" />
+          <div className="h-3 bg-gray-100 rounded w-1/2 mt-1" />
+        </div>
+        <div className="w-16 h-5 bg-gray-100 rounded-full" />
+      </div>
+      <div className="border-t border-gray-100 px-4 py-3 flex justify-between items-center">
+        <div className="h-4 bg-gray-200 rounded w-12" />
+        <div className="flex gap-2">
+          <div className="h-6 w-16 bg-gray-100 rounded-lg" />
+          <div className="h-6 w-20 bg-gray-100 rounded-lg" />
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const MOCK_BOOKINGS = [
   {
@@ -209,8 +233,11 @@ export default function MyBookingsPage() {
   const [rescheduleDate, setRescheduleDate] = useState(null)
   const [rescheduleSlot, setRescheduleSlot] = useState(null)
   const [rescheduledMap, setRescheduledMap] = useState({})
+  const [bookAgainService, setBookAgainService] = useState(null)
+  const [loadingSkeleton, setLoadingSkeleton] = useState(true)
 
   useEffect(() => { setMounted(true) }, [])
+  useEffect(() => { const t = setTimeout(() => setLoadingSkeleton(false), 600); return () => clearTimeout(t) }, [])
   useEffect(() => { if (hydrated && !user) router.push('/login') }, [hydrated, user, router])
   if (!hydrated || !mounted) return null
   if (!user) return null
@@ -271,7 +298,11 @@ export default function MyBookingsPage() {
       </div>
 
       {/* Booking cards */}
-      {filtered.length === 0 ? (
+      {loadingSkeleton ? (
+        <div className="space-y-4">
+          {[1,2,3].map(i => <SkeletonBookingCard key={i} />)}
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="text-center py-16">
           <div className="text-6xl mb-4">
             {tab === 'upcoming' ? '🗓️' : tab === 'completed' ? '✅' : tab === 'cancelled' ? '🚫' : '📋'}
@@ -287,7 +318,8 @@ export default function MyBookingsPage() {
             Browse services →
           </button>
         </div>
-      ) : (
+      ) : null}
+      {!loadingSkeleton && filtered.length > 0 ? (
         <div className="space-y-4">
           {filtered.map(b => (
             <div key={b.id} className="bg-white rounded-2xl shadow-card overflow-hidden">
@@ -361,6 +393,17 @@ export default function MyBookingsPage() {
                   )}
                   {b.status === 'completed' && (
                     <>
+                      <button onClick={() => {
+                        const text = `I just got my ${b.service} serviced via resQ! Booking ID: ${b.id}. Book at https://res-q-sepia-pi.vercel.app`
+                        if (navigator.share) {
+                          navigator.share({ title: 'resQ Booking', text })
+                        } else {
+                          navigator.clipboard.writeText(text).then(() => showToast('Booking link copied!', 'success'))
+                        }
+                      }} className="text-xs px-3 py-1.5 border border-gray-200 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 transition flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                        Share
+                      </button>
                       <button onClick={() => setReportBooking(b)} className="text-xs px-3 py-1.5 border border-navy text-navy rounded-lg font-semibold hover:bg-navy/5 transition flex items-center gap-1">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                         Report
@@ -372,7 +415,8 @@ export default function MyBookingsPage() {
                       ) : (
                         <span className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg font-semibold">✓ Rated</span>
                       )}
-                      <button className="text-xs px-3 py-1.5 bg-navy text-white rounded-lg font-semibold hover:bg-navy/90 transition">
+                      <button onClick={() => setBookAgainService({ name: b.service, img: b.img, price: b.price, category: b.appliance })}
+                        className="text-xs px-3 py-1.5 bg-navy text-white rounded-lg font-semibold hover:bg-navy/90 transition">
                         Book again
                       </button>
                     </>
@@ -441,6 +485,11 @@ export default function MyBookingsPage() {
             <button onClick={() => setRescheduleBooking(null)} className="w-full py-3 text-gray-500 text-sm font-semibold">Cancel</button>
           </div>
         </div>
+      )}
+
+      {/* Book again flow */}
+      {bookAgainService && (
+        <BookingFlow service={bookAgainService} onClose={() => setBookAgainService(null)} />
       )}
     </div>
   )

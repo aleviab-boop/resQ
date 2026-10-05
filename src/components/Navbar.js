@@ -3,11 +3,13 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { useTheme } from '@/context/ThemeContext'
 import { useState, useRef, useEffect } from 'react'
 
 export default function Navbar() {
   const pathname = usePathname()
   const { user, logout, cart } = useAuth()
+  const { dark, toggleDark, lang, toggleLang, t } = useTheme()
   const router = useRouter()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropRef = useRef(null)
@@ -91,6 +93,32 @@ export default function Navbar() {
               </Link>
             </>
           )}
+
+          {/* Language toggle */}
+          <button
+            onClick={toggleLang}
+            title={lang === 'en' ? 'Switch to Hindi' : 'Switch to English'}
+            className="text-white/80 hover:text-white text-xs font-bold border border-white/30 px-2 py-1 rounded-lg transition"
+          >
+            {lang === 'en' ? 'हिं' : 'EN'}
+          </button>
+
+          {/* Dark mode toggle */}
+          <button
+            onClick={toggleDark}
+            title={dark ? 'Light mode' : 'Dark mode'}
+            className="text-white/80 hover:text-white transition"
+          >
+            {dark ? (
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 7a5 5 0 100 10A5 5 0 0012 7zm0-5a1 1 0 011 1v1a1 1 0 01-2 0V3a1 1 0 011-1zm0 18a1 1 0 011 1v1a1 1 0 01-2 0v-1a1 1 0 011-1zm9-9h1a1 1 0 010 2h-1a1 1 0 010-2zM3 12H2a1 1 0 010-2h1a1 1 0 010 2zm15.364-7.364l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414-1.414zM4.929 19.071l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zm14.142 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 011.414-1.414zM5.636 4.636l-.707-.707A1 1 0 013.515 3.515l.707.707a1 1 0 01-1.414 1.414z"/>
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
+              </svg>
+            )}
+          </button>
 
           {/* User avatar / login */}
           {user ? (

@@ -16,11 +16,48 @@ const DEVICE_ICONS = { 'Air Conditioner': '❄️', 'Washing Machine': '🫧', '
 
 function warrantyStatus(purchaseDate, warrantyYears) {
   if (!purchaseDate || !warrantyYears) return null
+  const start = new Date(purchaseDate)
   const expiry = new Date(purchaseDate)
   expiry.setFullYear(expiry.getFullYear() + parseInt(warrantyYears))
   const today = new Date()
+  const totalDays = Math.ceil((expiry - start) / (1000 * 60 * 60 * 24))
   const daysLeft = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24))
-  return { expiry: expiry.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }), daysLeft }
+  const daysUsed = totalDays - daysLeft
+  const pctUsed = Math.min(100, Math.max(0, Math.round((daysUsed / totalDays) * 100)))
+  return { expiry: expiry.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }), daysLeft, pctUsed, totalDays }
+}
+
+function WarrantyRing({ pctUsed, daysLeft, expiry }) {
+  const radius = 36
+  const circ = 2 * Math.PI * radius
+  const offset = circ * (1 - pctUsed / 100)
+  const color = pctUsed >= 100 ? '#ef4444' : pctUsed >= 75 ? '#f59e0b' : '#34d399'
+  return (
+    <div className="flex items-center gap-4 bg-gray-50 rounded-2xl p-4 mt-4">
+      <div className="relative w-24 h-24 flex-shrink-0">
+        <svg className="w-24 h-24 -rotate-90" viewBox="0 0 88 88">
+          <circle cx="44" cy="44" r={radius} fill="none" stroke="#e5e7eb" strokeWidth="8" />
+          <circle cx="44" cy="44" r={radius} fill="none" stroke={color} strokeWidth="8"
+            strokeDasharray={circ} strokeDashoffset={offset}
+            strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.8s ease' }} />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-lg font-extrabold text-gray-900" style={{ color }}>{pctUsed}%</span>
+          <span className="text-[10px] text-gray-400 font-medium">used</span>
+        </div>
+      </div>
+      <div className="flex-1">
+        <div className="font-bold text-gray-800 text-sm">Warranty status</div>
+        <div className={`text-xs font-semibold mt-1 ${pctUsed >= 100 ? 'text-red-500' : pctUsed >= 75 ? 'text-amber-500' : 'text-green-600'}`}>
+          {pctUsed >= 100 ? 'Warranty expired' : `${Math.max(0, daysLeft)} days remaining`}
+        </div>
+        <div className="text-xs text-gray-400 mt-0.5">Valid till {expiry}</div>
+        <div className="mt-2 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pctUsed}%`, background: color }} />
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function MyDevicesPage() {
@@ -99,6 +136,9 @@ export default function MyDevicesPage() {
                     ))}
                   </div>
 
+                  {/* Warranty progress ring */}
+                  {ws && <WarrantyRing pctUsed={ws.pctUsed} daysLeft={ws.daysLeft} expiry={ws.expiry} />}
+
                   {/* Warranty expiry nudge */}
                   {(isExpired || isExpiring) && (
                     <div className="mt-4 bg-gradient-to-r from-navy to-sky rounded-xl p-4 text-white">
@@ -108,22 +148,42 @@ export default function MyDevicesPage() {
                     </div>
                   )}
 
-                  {/* Service history */}
-                  <div className="mt-4">
+                  {/* Service history timeline */}
+                  <div className="mt-5">
                     <h3 className="text-sm font-bold text-gray-900 mb-3">Service history</h3>
-                    <div className="space-y-2">
-                      {MOCK_HISTORY.map((h, i) => (
-                        <div key={i} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
-                          <div>
-                            <div className="text-sm font-semibold text-gray-800">{h.service}</div>
-                            <div className="text-xs text-gray-400">{h.date} · {h.tech}</div>
+                    <div className="relative">
+                      {/* Vertical line */}
+                      <div className="absolute left-4 top-3 bottom-3 w-0.5 bg-gray-200" />
+                      <div className="space-y-4">
+                        {MOCK_HISTORY.map((h, i) => (
+                          <div key={i} className="flex gap-4 items-start relative">
+                            {/* Dot */}
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 z-10 text-xs font-bold ${i === 0 ? 'bg-sky text-white' : 'bg-green-100 text-green-700'}`}>
+                              {i === 0 ? '🔧' : '✓'}
+                            </div>
+                            <div className="flex-1 bg-gray-50 rounded-xl px-4 py-3">
+                              <div className="flex justify-between items-start">
+                                <div className="font-semibold text-gray-800 text-sm leading-tight">{h.service}</div>
+                                <div className="text-sm font-bold text-navy ml-2 flex-shrink-0">{h.cost}</div>
+                              </div>
+                              <div className="flex items-center justify-between mt-1">
+                                <div className="text-xs text-gray-400">{h.date} · {h.tech}</div>
+                                <span className="text-xs text-green-600 font-semibold">{h.status}</span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <div className="text-sm font-bold text-navy">{h.cost}</div>
-                            <div className="text-xs text-green-600 font-semibold">{h.status}</div>
+                        ))}
+                        {/* "Device added" event at the end */}
+                        <div className="flex gap-4 items-start relative">
+                          <div className="w-8 h-8 rounded-full bg-navy/10 flex items-center justify-center flex-shrink-0 z-10 text-sm">📦</div>
+                          <div className="flex-1 bg-gray-50 rounded-xl px-4 py-3">
+                            <div className="font-semibold text-gray-700 text-sm">Device purchased</div>
+                            <div className="text-xs text-gray-400 mt-0.5">
+                              {device.purchaseDate ? new Date(device.purchaseDate).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : 'Date not set'}
+                            </div>
                           </div>
                         </div>
-                      ))}
+                      </div>
                     </div>
                   </div>
 

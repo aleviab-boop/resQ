@@ -35,6 +35,14 @@ export function AuthProvider({ children }) {
     try { localStorage.removeItem('resq_user') } catch {}
   }
 
+  function updateUser(updates) {
+    setUser(prev => {
+      const updated = { ...prev, ...updates }
+      try { localStorage.setItem('resq_user', JSON.stringify(updated)) } catch {}
+      return updated
+    })
+  }
+
   function addBooking(booking) {
     setBookings(prev => {
       const updated = [booking, ...prev]
@@ -55,7 +63,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, cart, addToCart, removeFromCart, bookings, addBooking, hydrated }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, cart, addToCart, removeFromCart, bookings, addBooking, hydrated }}>
       {children}
     </AuthContext.Provider>
   )

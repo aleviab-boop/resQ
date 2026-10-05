@@ -19,3 +19,20 @@ body {
 /* OTP inputs */
 .otp-input::-webkit-outer-spin-button,
 .otp-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+/* Dark mode */
+.dark body { background: #0f1117; color: #e2e8f0; }
+.dark .bg-white { background: #1e2230 !important; }
+.dark .bg-gray-50 { background: #161b27 !important; }
+.dark .bg-gray-100 { background: #1a2035 !important; }
+.dark .text-gray-900 { color: #f1f5f9 !important; }
+.dark .text-gray-700 { color: #cbd5e1 !important; }
+.dark .text-gray-600 { color: #94a3b8 !important; }
+.dark .text-gray-500 { color: #64748b !important; }
+.dark .text-gray-400 { color: #475569 !important; }
+.dark .border-gray-100 { border-color: #2d3748 !important; }
+.dark .border-gray-200 { border-color: #2d3748 !important; }
+.dark .shadow-card { box-shadow: 0 2px 16px rgba(0,0,0,0.4) !important; }
+
+/* Mobile safe area */
+.safe-area-inset-bottom { padding-bottom: env(safe-area-inset-bottom, 12px); }
