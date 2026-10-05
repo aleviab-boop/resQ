@@ -4,12 +4,12 @@ import { useState } from 'react'
 const WHATSAPP = '918889001700'
 
 const centers = [
-  { name: 'resQ Navi Mumbai', addr: 'Reliance Corporate Park, Thane Belapur Rd, Navi Mumbai 400701', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 9AM–7PM', maps: 'https://maps.google.com/?q=Reliance+Corporate+Park+Navi+Mumbai' },
-  { name: 'resQ Andheri', addr: 'SEEPZ, Andheri East, Mumbai 400093', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 9AM–7PM', maps: 'https://maps.google.com/?q=SEEPZ+Andheri+East+Mumbai' },
-  { name: 'resQ Thane', addr: 'Viviana Mall, Thane West 400601', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Viviana+Mall+Thane+West' },
-  { name: 'resQ Pune', addr: 'Phoenix Marketcity, Wakad, Pune 411057', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Phoenix+Marketcity+Wakad+Pune' },
-  { name: 'resQ Bangalore', addr: 'Forum Mall, Koramangala, Bangalore 560095', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Forum+Mall+Koramangala+Bangalore' },
-  { name: 'resQ Delhi', addr: 'Select Citywalk, Saket, New Delhi 110017', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Select+Citywalk+Saket+New+Delhi' },
+  { name: 'resQ Navi Mumbai', addr: 'RCP 5, Thane Belapur Road, TTC Industrial Area, Ghansoli, Navi Mumbai 400701', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 9AM–7PM', maps: 'https://maps.google.com/?q=RCP+5+Thane+Belapur+Road+TTC+Industrial+Area+Ghansoli+Navi+Mumbai+400701' },
+  { name: 'resQ Andheri', addr: 'Times Square, Basement 1, Andheri Kurla Road, Marol, Andheri East, Mumbai 400059', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 9AM–7PM', maps: 'https://maps.google.com/?q=Times+Square+Andheri+Kurla+Road+Marol+Andheri+East+Mumbai+400059' },
+  { name: 'resQ Thane', addr: 'Shop No. 5, Vikas Palms, Dr. Ambedkar Road, Thane West 400601', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Vikas+Palms+Dr+Ambedkar+Road+Thane+West+400601' },
+  { name: 'resQ Pune', addr: 'Siddh Samrudhi Building, Near LIG Colony Phase 1, Sector 25, Nigdi, Pimpri Chinchwad, Pune 411044', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Siddh+Samrudhi+Building+Sector+25+Nigdi+Pimpri+Chinchwad+Pune+411044' },
+  { name: 'resQ Bangalore', addr: 'Survey No 9/2, 1st Floor, Cornet Greens, Ambillpura, Varthur, HSR Layout, Bangalore 560102', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Cornet+Greens+Ambillpura+Varthur+HSR+Layout+Bangalore+560102' },
+  { name: 'resQ Delhi', addr: 'Shop No 224, 2nd Floor, City Centre, Swarn Jayanti Park, Rohini Sector 10, New Delhi 110085', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=City+Centre+Swarn+Jayanti+Park+Rohini+Sector+10+New+Delhi+110085' },
 ]
 
 export default function Locate() {

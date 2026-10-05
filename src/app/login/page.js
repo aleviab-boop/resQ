@@ -11,6 +11,7 @@ export default function Login() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
   const [otp, setOtp] = useState(['', '', '', ''])
   const [resendTimer, setResendTimer] = useState(0)
   const otpRefs = [useRef(), useRef(), useRef(), useRef()]
@@ -57,8 +58,17 @@ export default function Login() {
   function verifyOtp() {
     const code = otp.join('')
     if (code.length < 4) return
-    const name = tab === 'signup' ? (firstName || 'User') : 'User'
-    login(name, phone)
+    if (tab === 'signup') {
+      login(firstName || 'User', phone)
+      setStep('success')
+    } else {
+      // For login, ask for name before completing
+      setStep('name')
+    }
+  }
+
+  function handleNameSubmit() {
+    login(name.trim() || 'User', phone)
     setStep('success')
   }
 
@@ -220,6 +230,41 @@ export default function Login() {
                 className="w-full bg-navy text-white font-bold py-4 rounded-xl hover:bg-navy-dark transition disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 {tab === 'login' ? 'Verify & Login' : 'Create Account'}
+              </button>
+            </div>
+          )}
+
+          {/* Name step (login only) */}
+          {step === 'name' && (
+            <div className="space-y-5">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-sky/10 rounded-full flex items-center justify-center text-3xl mx-auto mb-3">👋</div>
+                <h3 className="text-lg font-extrabold text-gray-900 mb-1">What should we call you?</h3>
+                <p className="text-sm text-gray-400">So we can personalise your experience</p>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-gray-500 block mb-1.5">Your name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Alevia"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleNameSubmit()}
+                  autoFocus
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-sky"
+                />
+              </div>
+              <button
+                onClick={handleNameSubmit}
+                className="w-full bg-navy text-white font-bold py-4 rounded-xl hover:bg-navy/90 transition"
+              >
+                Continue
+              </button>
+              <button
+                onClick={() => { login('User', phone); setStep('success') }}
+                className="w-full text-gray-400 text-sm font-semibold py-1"
+              >
+                Skip for now
               </button>
             </div>
           )}
