@@ -7,6 +7,7 @@ import FaqBot from '@/components/FaqBot'
 import Onboarding from '@/components/Onboarding'
 import BottomNav from '@/components/BottomNav'
 import { ThemeProvider } from '@/context/ThemeContext'
+import NotificationManager from '@/components/NotificationManager'
 
 export const metadata = {
   title: 'Reliance resQ – Expert Home Appliance Care',
@@ -31,6 +32,7 @@ export default function RootLayout({ children }) {
             <FaqBot />
             <Onboarding />
             <BottomNav />
+            <NotificationManager />
           </ToastProvider>
         </AuthProvider>
         </ThemeProvider>
