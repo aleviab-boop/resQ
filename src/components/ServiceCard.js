@@ -75,9 +75,10 @@ export default function ServiceCard({ service }) {
           </button>
 
           {/* 45 min banner */}
-          <div className="mt-2 flex items-center justify-center gap-1.5 bg-sky/10 rounded-lg py-1.5">
-            <span className="text-sky text-xs">⚡</span>
-            <span className="text-sky text-[10px] font-bold">Get serviced in 45 mins</span>
+          <div className="mt-2 flex items-center justify-center gap-1.5 rounded-lg py-1.5 border border-sky"
+            style={{ background: '#e8f7fd' }}>
+            <span className="text-xs">⚡</span>
+            <span className="text-[10px] font-bold" style={{ color: '#00a1e1' }}>Get serviced in 45 mins</span>
           </div>
         </div>
       </div>
