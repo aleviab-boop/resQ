@@ -409,6 +409,9 @@ export default function MyBookingsPage() {
                         <span className="text-xs text-gray-500">{b.tech.rating} · {b.tech.jobs} jobs</span>
                       </div>
                     </div>
+                    <button onClick={() => setChatBooking(b)} className="w-9 h-9 bg-sky rounded-full flex items-center justify-center flex-shrink-0 hover:bg-sky/80 transition">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                    </button>
                     <a href={`tel:${b.tech.phone}`} className="w-9 h-9 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 hover:bg-green-600 transition">
                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
                     </a>
