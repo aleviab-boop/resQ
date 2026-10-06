@@ -51,10 +51,16 @@ export default function DashboardWidgets() {
             <div className="text-sm font-bold text-amber-800">{w.name}</div>
             <div className="text-xs text-amber-600 mt-0.5">Warranty expires in {w.daysLeft} days</div>
           </div>
-          <Link href="/amc"
-            className="flex-shrink-0 bg-amber-500 text-white text-xs font-bold px-3 py-2 rounded-xl hover:bg-amber-600 transition">
-            Protect
-          </Link>
+          <div className="flex flex-col gap-1.5 flex-shrink-0">
+            <Link href="/all-services?q=AC"
+              className="bg-sky text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-sky/90 transition text-center">
+              Book Service
+            </Link>
+            <Link href="/care-plan"
+              className="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-amber-600 transition text-center">
+              Protect
+            </Link>
+          </div>
         </div>
       ))}
     </div>
