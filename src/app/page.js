@@ -102,10 +102,11 @@ export default function Dashboard() {
                 { icon: <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>, label: 'Routine maintenance' },
                 { icon: <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>, label: '365 days available' },
                 { icon: <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>, label: 'Free pickup & drop' },
-              ].map(f => (
-                <div key={f.label} className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">{f.icon}</div>
-                  <span className="text-white font-semibold text-sm leading-tight">{f.label}</span>
+              ].map((f, i) => (
+                <div key={f.label} className="flex items-center gap-3 group"
+                  style={{ animation: `fadeSlideUp 0.5s ease both`, animationDelay: `${i * 0.15}s` }}>
+                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300">{f.icon}</div>
+                  <span className="text-white font-semibold text-sm leading-tight group-hover:translate-x-1 transition-transform duration-300">{f.label}</span>
                 </div>
               ))}
             </div>
