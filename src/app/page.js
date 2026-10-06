@@ -8,11 +8,13 @@ import BundleDeals from '@/components/BundleDeals'
 import DashboardWidgets from '@/components/DashboardWidgets'
 import FlashSaleBanner from '@/components/FlashSaleBanner'
 import Link from 'next/link'
+import { useState } from 'react'
 import { mainAppliances, maintenanceServices, installationServices, testimonialVideos } from '@/lib/data'
 import { useTheme } from '@/context/ThemeContext'
 
 export default function Dashboard() {
   const { t } = useTheme()
+  const [express, setExpress] = useState(false)
   return (
     <div>
       <LocationBar />
@@ -28,6 +30,28 @@ export default function Dashboard() {
           </h1>
           <p className="text-gray-500 text-sm mt-2">{t.tagline}</p>
         </div>
+
+        {/* Express Service Toggle Banner */}
+        <button
+          onClick={() => setExpress(v => !v)}
+          className={`w-full flex items-center justify-between gap-4 rounded-2xl px-5 py-4 transition-all duration-300 ${express ? 'bg-gradient-to-r from-sky to-navy shadow-lg scale-[1.01]' : 'bg-gray-100 hover:bg-gray-200'}`}
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">{express ? '⚡' : '🕐'}</span>
+            <div className="text-left">
+              <div className={`font-extrabold text-sm ${express ? 'text-white' : 'text-gray-800'}`}>
+                {express ? 'Express mode ON — Get servicing in 45 mins!' : 'Get servicing in 45 mins'}
+              </div>
+              <div className={`text-xs mt-0.5 ${express ? 'text-white/80' : 'text-gray-500'}`}>
+                {express ? 'Priority technicians are being assigned near you' : 'Toggle for priority same-day service'}
+              </div>
+            </div>
+          </div>
+          {/* Toggle pill */}
+          <div className={`w-12 h-6 rounded-full flex-shrink-0 relative transition-colors duration-300 ${express ? 'bg-white/30' : 'bg-gray-300'}`}>
+            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-300 ${express ? 'left-7' : 'left-1'}`} />
+          </div>
+        </button>
 
         {/* Dashboard Widgets — active booking + warranty nudge */}
         <DashboardWidgets />
