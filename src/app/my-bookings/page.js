@@ -440,12 +440,6 @@ export default function MyBookingsPage() {
                   )}
                   {b.status === 'upcoming' && (
                     <>
-                      <button
-                        onClick={() => setChatBooking(b)}
-                        className="text-xs px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 bg-green-500 text-white hover:bg-green-600"
-                      >
-                        <span>💬</span> Chat
-                      </button>
                       <button onClick={() => { setRescheduleBooking(b); setRescheduleDate(null); setRescheduleSlot(null) }}
                         className="text-xs px-3 py-1.5 border border-sky text-sky rounded-lg font-semibold hover:bg-sky/10 transition">
                         {t.reschedule}
