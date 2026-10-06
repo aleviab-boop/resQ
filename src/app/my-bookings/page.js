@@ -7,6 +7,7 @@ import { useEffect, useState, useRef } from 'react'
 import ServiceReport from '@/components/ServiceReport'
 import RatingModal from '@/components/RatingModal'
 import BookingFlow from '@/components/BookingFlow'
+import TechChat from '@/components/TechChat'
 
 function SkeletonBookingCard() {
   return (
@@ -236,6 +237,7 @@ export default function MyBookingsPage() {
   const [rescheduleSlot, setRescheduleSlot] = useState(null)
   const [rescheduledMap, setRescheduledMap] = useState({})
   const [bookAgainService, setBookAgainService] = useState(null)
+  const [chatBooking, setChatBooking] = useState(null)
   const [loadingSkeleton, setLoadingSkeleton] = useState(true)
 
   useEffect(() => { setMounted(true) }, [])
@@ -374,15 +376,29 @@ export default function MyBookingsPage() {
                 <span className="text-sm font-bold text-navy">{b.price}</span>
                 <div className="flex gap-2">
                   {b.status === 'live' && (
-                    <button
-                      onClick={() => setTracking(tracking === b.id ? null : b.id)}
-                      className="text-xs px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600"
-                    >
-                      <span>📍</span> {tracking === b.id ? t.hideMap : t.trackLive}
-                    </button>
+                    <>
+                      <button
+                        onClick={() => setChatBooking(b)}
+                        className="text-xs px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 bg-green-500 text-white hover:bg-green-600"
+                      >
+                        <span>💬</span> Chat
+                      </button>
+                      <button
+                        onClick={() => setTracking(tracking === b.id ? null : b.id)}
+                        className="text-xs px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 bg-red-500 text-white hover:bg-red-600"
+                      >
+                        <span>📍</span> {tracking === b.id ? t.hideMap : t.trackLive}
+                      </button>
+                    </>
                   )}
                   {b.status === 'upcoming' && (
                     <>
+                      <button
+                        onClick={() => setChatBooking(b)}
+                        className="text-xs px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 bg-green-500 text-white hover:bg-green-600"
+                      >
+                        <span>💬</span> Chat
+                      </button>
                       <button onClick={() => { setRescheduleBooking(b); setRescheduleDate(null); setRescheduleSlot(null) }}
                         className="text-xs px-3 py-1.5 border border-sky text-sky rounded-lg font-semibold hover:bg-sky/10 transition">
                         {t.reschedule}
@@ -492,6 +508,9 @@ export default function MyBookingsPage() {
       {/* Book again flow */}
       {bookAgainService && (
         <BookingFlow service={bookAgainService} onClose={() => setBookAgainService(null)} />
+      )}
+      {chatBooking && chatBooking.tech && (
+        <TechChat booking={chatBooking} onClose={() => setChatBooking(null)} />
       )}
     </div>
   )
