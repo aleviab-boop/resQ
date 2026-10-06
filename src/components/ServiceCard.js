@@ -73,6 +73,12 @@ export default function ServiceCard({ service }) {
           >
             Book now
           </button>
+
+          {/* 45 min banner */}
+          <div className="mt-2 flex items-center justify-center gap-1.5 bg-sky/10 rounded-lg py-1.5">
+            <span className="text-sky text-xs">⚡</span>
+            <span className="text-sky text-[10px] font-bold">Get serviced in 45 mins</span>
+          </div>
         </div>
       </div>
 
