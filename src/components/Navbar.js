@@ -108,49 +108,73 @@ export default function Navbar() {
               </button>
 
               {dropdownOpen && (
-                <div className="absolute right-0 top-12 bg-white rounded-2xl shadow-2xl w-48 py-2 z-50 text-sm overflow-hidden">
+                <div className="absolute right-0 top-12 rounded-2xl shadow-2xl w-56 py-2 z-50 text-sm overflow-hidden"
+                  style={{ background: '#ffffff', border: '1px solid #f0f0f0' }}>
                   <Link href="/profile" onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-800 font-medium">
+                    className="flex items-center gap-3 px-4 py-3 font-medium transition-colors"
+                    style={{ color: '#1a1a2e' }}
+                    onMouseEnter={e => e.currentTarget.style.background='#f8faff'}
+                    onMouseLeave={e => e.currentTarget.style.background='transparent'}>
                     <span>👤</span> {t.navProfile}
                   </Link>
                   <Link href="/my-bookings" onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-800 font-medium">
+                    className="flex items-center gap-3 px-4 py-3 font-medium transition-colors"
+                    style={{ color: '#1a1a2e' }}
+                    onMouseEnter={e => e.currentTarget.style.background='#f8faff'}
+                    onMouseLeave={e => e.currentTarget.style.background='transparent'}>
                     <span>📋</span> {t.navMyBookings}
                   </Link>
                   <Link href="/Notifications" onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-800 font-medium">
+                    className="flex items-center gap-3 px-4 py-3 font-medium transition-colors"
+                    style={{ color: '#1a1a2e' }}
+                    onMouseEnter={e => e.currentTarget.style.background='#f8faff'}
+                    onMouseLeave={e => e.currentTarget.style.background='transparent'}>
                     <span>🔔</span> {t.navNotifications}
                   </Link>
                   <Link href="/CartDetails" onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-800 font-medium">
-                    <span>🛒</span> {t.navCart} {cart.length > 0 && <span className="ml-auto bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">{cart.length}</span>}
+                    className="flex items-center gap-3 px-4 py-3 font-medium transition-colors"
+                    style={{ color: '#1a1a2e' }}
+                    onMouseEnter={e => e.currentTarget.style.background='#f8faff'}
+                    onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+                    <span>🛒</span> {t.navCart}
+                    {cart.length > 0 && <span className="ml-auto bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">{cart.length}</span>}
                   </Link>
-                  <hr className="my-1 border-gray-100" />
+                  <div style={{ borderTop: '1px solid #f0f0f0', margin: '4px 0' }} />
                   {/* Dark mode toggle */}
                   <button onClick={toggleDark}
-                    className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50 text-gray-800 font-medium">
+                    className="w-full flex items-center justify-between gap-3 px-4 py-3 font-medium transition-colors"
+                    style={{ color: '#1a1a2e', background: 'transparent' }}
+                    onMouseEnter={e => e.currentTarget.style.background='#f8faff'}
+                    onMouseLeave={e => e.currentTarget.style.background='transparent'}>
                     <div className="flex items-center gap-3">
                       <span>{dark ? '☀️' : '🌙'}</span>
-                      <span>{dark ? 'Light mode' : 'Dark mode'}</span>
+                      <span style={{ color: '#1a1a2e' }}>{dark ? 'Light mode' : 'Dark mode'}</span>
                     </div>
-                    <div className={`w-9 h-5 rounded-full transition-colors ${dark ? 'bg-sky' : 'bg-gray-200'} relative flex-shrink-0`}>
+                    <div className={`w-9 h-5 rounded-full transition-colors flex-shrink-0 relative`}
+                      style={{ background: dark ? '#00a1e1' : '#d1d5db' }}>
                       <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${dark ? 'translate-x-4' : 'translate-x-0.5'}`} />
                     </div>
                   </button>
                   {/* Language toggle */}
                   <button onClick={toggleLang}
-                    className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50 text-gray-800 font-medium">
+                    className="w-full flex items-center justify-between gap-3 px-4 py-3 font-medium transition-colors"
+                    style={{ color: '#1a1a2e', background: 'transparent' }}
+                    onMouseEnter={e => e.currentTarget.style.background='#f8faff'}
+                    onMouseLeave={e => e.currentTarget.style.background='transparent'}>
                     <div className="flex items-center gap-3">
                       <span>🌐</span>
-                      <span>Language</span>
+                      <span style={{ color: '#1a1a2e' }}>Language</span>
                     </div>
-                    <span className="text-xs font-bold bg-sky/10 text-sky px-2 py-1 rounded-lg">
+                    <span className="text-xs font-bold px-2 py-1 rounded-lg" style={{ background: '#e8f7fd', color: '#00a1e1' }}>
                       {lang === 'en' ? 'EN → हिं' : 'हिं → EN'}
                     </span>
                   </button>
-                  <hr className="my-1 border-gray-100" />
+                  <div style={{ borderTop: '1px solid #f0f0f0', margin: '4px 0' }} />
                   <button onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-red-500 font-medium">
+                    className="w-full flex items-center gap-3 px-4 py-3 font-medium transition-colors"
+                    style={{ color: '#ef4444', background: 'transparent' }}
+                    onMouseEnter={e => e.currentTarget.style.background='#fff5f5'}
+                    onMouseLeave={e => e.currentTarget.style.background='transparent'}>
                     <span>🚪</span> {t.navLogout}
                   </button>
                 </div>
