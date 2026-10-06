@@ -41,10 +41,12 @@ export default function RatingModal({ booking, onClose, onSubmit }) {
 
         {/* Technician */}
         <div className="flex items-center gap-3 bg-gray-50 rounded-2xl p-4 mb-5">
-          <div className="w-11 h-11 rounded-full bg-navy text-white flex items-center justify-center font-bold text-base">R</div>
+          <div className="w-11 h-11 rounded-full bg-navy text-white flex items-center justify-center font-bold text-base">
+            {(booking?.tech?.name || 'T').charAt(0)}
+          </div>
           <div>
-            <div className="font-bold text-gray-900 text-sm">Rahul Sharma</div>
-            <div className="text-xs text-gray-400">{booking?.service || 'Split AC Jet Service'}</div>
+            <div className="font-bold text-gray-900 text-sm">{booking?.tech?.name || 'Technician'}</div>
+            <div className="text-xs text-gray-400">{booking?.service || 'Service'}</div>
           </div>
         </div>
 

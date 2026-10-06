@@ -9,6 +9,7 @@ import RatingModal from '@/components/RatingModal'
 import BookingFlow from '@/components/BookingFlow'
 import TechChat from '@/components/TechChat'
 import TechProfileModal from '@/components/TechProfileModal'
+import BeforeAfterPhotos from '@/components/BeforeAfterPhotos'
 
 function SkeletonBookingCard() {
   return (
@@ -240,6 +241,7 @@ export default function MyBookingsPage() {
   const [bookAgainService, setBookAgainService] = useState(null)
   const [chatBooking, setChatBooking] = useState(null)
   const [techProfile, setTechProfile] = useState(null)
+  const [photosBooking, setPhotosBooking] = useState(null)
   const [loadingSkeleton, setLoadingSkeleton] = useState(true)
 
   useEffect(() => { setMounted(true) }, [])
@@ -264,6 +266,40 @@ export default function MyBookingsPage() {
     showToast('Booking rescheduled!', 'success')
   }
 
+  function exportHistoryPDF() {
+    const bookings = [...(userBookings || []), ...MOCK_BOOKINGS]
+    const rows = bookings.map(b => `
+      <tr>
+        <td>${b.id}</td>
+        <td>${b.service}</td>
+        <td>${b.date || '—'}</td>
+        <td>${b.tech?.name || '—'}</td>
+        <td>${b.price}</td>
+        <td style="text-transform:capitalize">${b.status}</td>
+      </tr>`).join('')
+    const html = `<!DOCTYPE html><html><head><title>resQ Service History</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 32px; color: #1a1a2e; }
+      h1 { color: #13347b; margin-bottom: 4px; }
+      p { color: #888; font-size: 13px; margin-bottom: 24px; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th { background: #13347b; color: white; padding: 10px 12px; text-align: left; }
+      td { padding: 9px 12px; border-bottom: 1px solid #eee; }
+      tr:nth-child(even) td { background: #f8faff; }
+      .footer { margin-top: 32px; font-size: 11px; color: #aaa; text-align: center; }
+    </style></head><body>
+    <h1>resQ Service History</h1>
+    <p>Generated on ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })} · Total bookings: ${bookings.length}</p>
+    <table><thead><tr><th>Booking ID</th><th>Service</th><th>Date</th><th>Technician</th><th>Amount</th><th>Status</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <div class="footer">Reliance resQ · 1800 267 0999 · resqservices.in</div>
+    <script>window.onload=()=>window.print()</script>
+    </body></html>`
+    const win = window.open('', '_blank', 'width=900,height=700')
+    win.document.write(html)
+    win.document.close()
+  }
+
   // Merge user-created bookings (newest first) with mock bookings
   const ALL_BOOKINGS = [...(userBookings || []), ...MOCK_BOOKINGS].map(b => {
     const rescheduled = rescheduledMap[b.id]
@@ -274,7 +310,13 @@ export default function MyBookingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
-      <h1 className="text-xl font-bold text-gray-900">{t.myBookings}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-gray-900">{t.myBookings}</h1>
+        <button onClick={exportHistoryPDF} className="flex items-center gap-1.5 text-xs font-semibold text-navy border border-navy/30 px-3 py-2 rounded-xl hover:bg-navy/5 transition">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Export PDF
+        </button>
+      </div>
 
       {/* Live booking banner */}
       {ALL_BOOKINGS.some(b => b.status === 'live') && (
@@ -424,6 +466,9 @@ export default function MyBookingsPage() {
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
                         {t.share}
                       </button>
+                      <button onClick={() => setPhotosBooking(photosBooking === b.id ? null : b.id)} className="text-xs px-3 py-1.5 border border-purple-200 text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition flex items-center gap-1">
+                        📷 Photos
+                      </button>
                       <button onClick={() => setReportBooking(b)} className="text-xs px-3 py-1.5 border border-navy text-navy rounded-lg font-semibold hover:bg-navy/5 transition flex items-center gap-1">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                         {t.report}
@@ -443,6 +488,10 @@ export default function MyBookingsPage() {
                   )}
                 </div>
               </div>
+              {/* Before/after photos inline */}
+              {photosBooking === b.id && b.status === 'completed' && (
+                <BeforeAfterPhotos service={b.service} />
+              )}
             </div>
           ))}
         </div>
