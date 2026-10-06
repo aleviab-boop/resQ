@@ -4,19 +4,41 @@ import { useState } from 'react'
 const WHATSAPP = '918889001700'
 
 const centers = [
-  { name: 'resQ Navi Mumbai', addr: 'RCP 5, Thane Belapur Road, TTC Industrial Area, Ghansoli, Navi Mumbai 400701', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 9AM–7PM', maps: 'https://maps.google.com/?q=RCP+5+Thane+Belapur+Road+TTC+Industrial+Area+Ghansoli+Navi+Mumbai+400701' },
-  { name: 'resQ Andheri', addr: 'Times Square, Basement 1, Andheri Kurla Road, Marol, Andheri East, Mumbai 400059', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 9AM–7PM', maps: 'https://maps.google.com/?q=Times+Square+Andheri+Kurla+Road+Marol+Andheri+East+Mumbai+400059' },
-  { name: 'resQ Thane', addr: 'Shop No. 5, Vikas Palms, Dr. Ambedkar Road, Thane West 400601', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Vikas+Palms+Dr+Ambedkar+Road+Thane+West+400601' },
-  { name: 'resQ Pune', addr: 'Siddh Samrudhi Building, Near LIG Colony Phase 1, Sector 25, Nigdi, Pimpri Chinchwad, Pune 411044', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Siddh+Samrudhi+Building+Sector+25+Nigdi+Pimpri+Chinchwad+Pune+411044' },
-  { name: 'resQ Bangalore', addr: 'Survey No 9/2, 1st Floor, Cornet Greens, Ambillpura, Varthur, HSR Layout, Bangalore 560102', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Cornet+Greens+Ambillpura+Varthur+HSR+Layout+Bangalore+560102' },
-  { name: 'resQ Delhi', addr: 'Shop No 224, 2nd Floor, City Centre, Swarn Jayanti Park, Rohini Sector 10, New Delhi 110085', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=City+Centre+Swarn+Jayanti+Park+Rohini+Sector+10+New+Delhi+110085' },
+  // Maharashtra
+  { name: 'resQ Navi Mumbai', city: 'Navi Mumbai', state: 'Maharashtra', addr: 'RCP 5, Thane Belapur Road, TTC Industrial Area, Ghansoli, Navi Mumbai 400701', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 9AM–7PM', maps: 'https://maps.google.com/?q=RCP+5+Thane+Belapur+Road+TTC+Industrial+Area+Ghansoli+Navi+Mumbai+400701' },
+  { name: 'resQ Andheri', city: 'Mumbai', state: 'Maharashtra', addr: 'Times Square, Basement 1, Andheri Kurla Road, Marol, Andheri East, Mumbai 400059', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 9AM–7PM', maps: 'https://maps.google.com/?q=Times+Square+Andheri+Kurla+Road+Marol+Andheri+East+Mumbai+400059' },
+  { name: 'resQ Thane', city: 'Thane', state: 'Maharashtra', addr: 'Shop No. 5, Vikas Palms, Dr. Ambedkar Road, Thane West 400601', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Vikas+Palms+Dr+Ambedkar+Road+Thane+West+400601' },
+  { name: 'resQ Pune', city: 'Pune', state: 'Maharashtra', addr: 'Siddh Samrudhi Building, Near LIG Colony Phase 1, Sector 25, Nigdi, Pimpri Chinchwad, Pune 411044', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Siddh+Samrudhi+Building+Sector+25+Nigdi+Pimpri+Chinchwad+Pune+411044' },
+  // Karnataka
+  { name: 'resQ Bangalore HSR', city: 'Bangalore', state: 'Karnataka', addr: 'Survey No 9/2, 1st Floor, Cornet Greens, Ambillpura, Varthur, HSR Layout, Bangalore 560102', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Cornet+Greens+Ambillpura+Varthur+HSR+Layout+Bangalore+560102' },
+  { name: 'resQ Bangalore Indiranagar', city: 'Bangalore', state: 'Karnataka', addr: '100 Feet Road, HAL 2nd Stage, Indiranagar, Bangalore 560038', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 9AM–7PM', maps: 'https://maps.google.com/?q=100+Feet+Road+HAL+2nd+Stage+Indiranagar+Bangalore+560038' },
+  // Delhi NCR
+  { name: 'resQ Delhi Rohini', city: 'Delhi', state: 'Delhi', addr: 'Shop No 224, 2nd Floor, City Centre, Swarn Jayanti Park, Rohini Sector 10, New Delhi 110085', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=City+Centre+Swarn+Jayanti+Park+Rohini+Sector+10+New+Delhi+110085' },
+  { name: 'resQ Gurugram', city: 'Gurugram', state: 'Haryana', addr: 'SCO 15, Sector 14 Market, Gurugram, Haryana 122001', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 9AM–7PM', maps: 'https://maps.google.com/?q=SCO+15+Sector+14+Market+Gurugram+Haryana+122001' },
+  { name: 'resQ Noida', city: 'Noida', state: 'Uttar Pradesh', addr: 'Plot No. 8, Sector 3, Noida, Uttar Pradesh 201301', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Plot+No+8+Sector+3+Noida+Uttar+Pradesh+201301' },
+  // Tamil Nadu
+  { name: 'resQ Chennai Anna Nagar', city: 'Chennai', state: 'Tamil Nadu', addr: '3rd Ave, Anna Nagar West, Chennai 600040', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 9AM–7PM', maps: 'https://maps.google.com/?q=3rd+Ave+Anna+Nagar+West+Chennai+600040' },
+  { name: 'resQ Chennai Velachery', city: 'Chennai', state: 'Tamil Nadu', addr: 'Plot 12, Velachery Main Road, Velachery, Chennai 600042', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Velachery+Main+Road+Velachery+Chennai+600042' },
+  // Telangana
+  { name: 'resQ Hyderabad Banjara Hills', city: 'Hyderabad', state: 'Telangana', addr: 'Road No. 12, Banjara Hills, Hyderabad 500034', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 9AM–7PM', maps: 'https://maps.google.com/?q=Road+No+12+Banjara+Hills+Hyderabad+500034' },
+  { name: 'resQ Hyderabad Secunderabad', city: 'Hyderabad', state: 'Telangana', addr: 'MG Road, Secunderabad, Hyderabad 500003', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=MG+Road+Secunderabad+Hyderabad+500003' },
+  // West Bengal
+  { name: 'resQ Kolkata Salt Lake', city: 'Kolkata', state: 'West Bengal', addr: 'Block A, Sector V, Salt Lake City, Kolkata 700091', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Block+A+Sector+V+Salt+Lake+City+Kolkata+700091' },
+  // Gujarat
+  { name: 'resQ Ahmedabad', city: 'Ahmedabad', state: 'Gujarat', addr: 'B-12, Sarkhej Gandhinagar Highway, Near Makarba, Ahmedabad 380051', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 9AM–7PM', maps: 'https://maps.google.com/?q=Sarkhej+Gandhinagar+Highway+Near+Makarba+Ahmedabad+380051' },
+  // Rajasthan
+  { name: 'resQ Jaipur', city: 'Jaipur', state: 'Rajasthan', addr: 'C-Scheme, Sawai Ram Singh Road, Jaipur 302001', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=C-Scheme+Sawai+Ram+Singh+Road+Jaipur+302001' },
 ]
 
 export default function Locate() {
   const [query, setQuery] = useState('')
+  const q = query.toLowerCase()
   const filtered = centers.filter(c =>
-    c.name.toLowerCase().includes(query.toLowerCase()) ||
-    c.addr.toLowerCase().includes(query.toLowerCase())
+    !q ||
+    c.name.toLowerCase().includes(q) ||
+    c.addr.toLowerCase().includes(q) ||
+    c.city.toLowerCase().includes(q) ||
+    c.state.toLowerCase().includes(q)
   )
 
   return (
