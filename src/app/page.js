@@ -6,6 +6,7 @@ import ServiceCard from '@/components/ServiceCard'
 import VideoCard from '@/components/VideoCard'
 import BundleDeals from '@/components/BundleDeals'
 import DashboardWidgets from '@/components/DashboardWidgets'
+import FlashSaleBanner from '@/components/FlashSaleBanner'
 import Link from 'next/link'
 import { mainAppliances, maintenanceServices, installationServices, testimonialVideos } from '@/lib/data'
 import { useTheme } from '@/context/ThemeContext'
@@ -32,6 +33,9 @@ export default function Dashboard() {
         <DashboardWidgets />
 
         {/* Offer Carousel */}
+        {/* Flash sale countdown */}
+        <FlashSaleBanner />
+
         <OfferCarousel />
 
         {/* Repair & Service */}

@@ -15,6 +15,21 @@ const MOCK_HISTORY = [
 
 const DEVICE_ICONS = { 'Air Conditioner': '❄️', 'Washing Machine': '🫧', 'Refrigerator': '🧊', 'LED TV': '📺', 'Water Purifier': '💧', 'Air Cooler': '🌬️', 'Microwave': '📡', 'Dishwasher': '🍽️', 'Geyser': '🚿', 'Other': '🔌' }
 
+function healthScore(purchaseDate, serviceHistory) {
+  if (!purchaseDate) return null
+  const ageMonths = Math.floor((Date.now() - new Date(purchaseDate)) / (1000 * 60 * 60 * 24 * 30))
+  const lastServiceDaysAgo = serviceHistory?.length > 0
+    ? Math.floor((Date.now() - new Date(serviceHistory[0].date.replace(/(\d+)\s(\w+)\s(\d+)/, '$2 $1, $3'))) / (1000 * 60 * 60 * 24))
+    : 999
+  let score = 100
+  score -= Math.min(30, Math.floor(ageMonths / 6) * 5)      // age penalty
+  score -= Math.min(30, Math.floor(lastServiceDaysAgo / 60) * 10)  // overdue service penalty
+  score = Math.max(20, score)
+  const label = score >= 80 ? 'Excellent' : score >= 60 ? 'Good' : score >= 40 ? 'Fair' : 'Needs Service'
+  const color = score >= 80 ? '#34d399' : score >= 60 ? '#60a5fa' : score >= 40 ? '#f59e0b' : '#ef4444'
+  return { score, label, color }
+}
+
 function warrantyStatus(purchaseDate, warrantyYears) {
   if (!purchaseDate || !warrantyYears) return null
   const start = new Date(purchaseDate)
@@ -107,6 +122,7 @@ export default function MyDevicesPage() {
           const ws = warrantyStatus(device.purchaseDate, device.warrantyYears)
           const isExpired = ws && ws.daysLeft <= 0
           const isExpiring = ws && ws.daysLeft > 0 && ws.daysLeft <= 30
+          const hs = healthScore(device.purchaseDate, MOCK_HISTORY)
           return (
             <div key={device.id} className={`bg-white rounded-2xl shadow-card overflow-hidden border-2 ${selectedDevice?.id === device.id ? 'border-sky' : 'border-transparent'}`}>
               <button className="w-full text-left p-5 flex items-center gap-4" onClick={() => setSelectedDevice(selectedDevice?.id === device.id ? null : device)}>
@@ -117,6 +133,7 @@ export default function MyDevicesPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-gray-900">{device.brand} {device.model}</span>
                     {isExpired && <span className="text-xs bg-red-100 text-red-600 font-semibold px-2 py-0.5 rounded-full">{t.warrantyExpired}</span>}
+                    {hs && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: hs.color + '22', color: hs.color }}>❤️ {hs.score}% {hs.label}</span>}
                     {isExpiring && <span className="text-xs bg-yellow-100 text-yellow-700 font-semibold px-2 py-0.5 rounded-full">⏰ {ws.daysLeft}d</span>}
                     {ws && !isExpired && !isExpiring && <span className="text-xs bg-green-100 text-green-700 font-semibold px-2 py-0.5 rounded-full">{t.underWarranty}</span>}
                   </div>

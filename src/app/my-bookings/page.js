@@ -8,6 +8,7 @@ import ServiceReport from '@/components/ServiceReport'
 import RatingModal from '@/components/RatingModal'
 import BookingFlow from '@/components/BookingFlow'
 import TechChat from '@/components/TechChat'
+import TechProfileModal from '@/components/TechProfileModal'
 
 function SkeletonBookingCard() {
   return (
@@ -238,6 +239,7 @@ export default function MyBookingsPage() {
   const [rescheduledMap, setRescheduledMap] = useState({})
   const [bookAgainService, setBookAgainService] = useState(null)
   const [chatBooking, setChatBooking] = useState(null)
+  const [techProfile, setTechProfile] = useState(null)
   const [loadingSkeleton, setLoadingSkeleton] = useState(true)
 
   useEffect(() => { setMounted(true) }, [])
@@ -359,7 +361,7 @@ export default function MyBookingsPage() {
                       {b.tech.name.charAt(0)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-gray-900 text-sm">{b.tech.name}</div>
+                      <button onClick={() => setTechProfile(b.tech)} className="font-semibold text-navy text-sm underline underline-offset-2 hover:text-sky transition text-left">{b.tech.name}</button>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <Stars rating={b.tech.rating} />
                         <span className="text-xs text-gray-500">{b.tech.rating} · {b.tech.jobs} jobs</span>
@@ -511,6 +513,9 @@ export default function MyBookingsPage() {
       )}
       {chatBooking && chatBooking.tech && (
         <TechChat booking={chatBooking} onClose={() => setChatBooking(null)} />
+      )}
+      {techProfile && (
+        <TechProfileModal tech={techProfile} onClose={() => setTechProfile(null)} />
       )}
     </div>
   )

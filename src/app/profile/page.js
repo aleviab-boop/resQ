@@ -100,6 +100,20 @@ export default function ProfilePage() {
           </div>
         </div>
 
+        {/* ResQ Points wallet */}
+        <div className="mt-4 bg-gradient-to-r from-navy to-sky rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl flex-shrink-0">⭐</div>
+          <div className="flex-1 min-w-0">
+            <div className="text-white/80 text-xs font-semibold">resQ Points</div>
+            <div className="text-white font-extrabold text-2xl">1,240 pts</div>
+            <div className="text-white/70 text-xs mt-0.5">Worth ₹124 · Redeemable on next booking</div>
+          </div>
+          <div className="text-right flex-shrink-0">
+            <div className="text-white/70 text-xs mb-1">Earn 10 pts per ₹100</div>
+            <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">Redeem</span>
+          </div>
+        </div>
+
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-3 mt-5 border-t border-gray-100 pt-5">
           {[['5', t.navMyBookings], ['2', t.navDevices], ['1', t.navCare]].map(([val, label]) => (
