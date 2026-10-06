@@ -74,6 +74,14 @@ export default function ServiceDetail({ params }) {
             )}
             <SlaBadge className="w-full" />
             <BookButton service={svc} />
+            {/* Express delivery badge */}
+            <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-sky/10 to-navy/10 border border-sky/20 rounded-xl py-2.5">
+              <span className="text-lg">⚡</span>
+              <div>
+                <div className="text-sky text-xs font-extrabold">Get serviced in 45 mins</div>
+                <div className="text-gray-400 text-[10px]">Express technicians available near you</div>
+              </div>
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl shadow-card border border-gray-100 p-6">
