@@ -28,6 +28,8 @@ const centers = [
   { name: 'resQ Ahmedabad', city: 'Ahmedabad', state: 'Gujarat', addr: 'B-12, Sarkhej Gandhinagar Highway, Near Makarba, Ahmedabad 380051', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 9AM–7PM', maps: 'https://maps.google.com/?q=Sarkhej+Gandhinagar+Highway+Near+Makarba+Ahmedabad+380051' },
   // Rajasthan
   { name: 'resQ Jaipur', city: 'Jaipur', state: 'Rajasthan', addr: 'C-Scheme, Sawai Ram Singh Road, Jaipur 302001', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=C-Scheme+Sawai+Ram+Singh+Road+Jaipur+302001' },
+  // Odisha
+  { name: 'resQ Bhubaneswar', city: 'Bhubaneswar', state: 'Odisha', addr: 'Plot No. 127, Saheed Nagar, Bhubaneswar 751007', phone: '18002670999', display: '1800 267 0999', hours: 'Mon–Sat 10AM–8PM', maps: 'https://maps.google.com/?q=Plot+127+Saheed+Nagar+Bhubaneswar+751007' },
 ]
 
 export default function Locate() {
