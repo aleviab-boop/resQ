@@ -1,6 +1,18 @@
 'use client'
 import { useAuth } from '@/context/AuthContext'
 import Link from 'next/link'
+import { useState } from 'react'
+import BookingFlow from './BookingFlow'
+
+const AC_SERVICE = {
+  name: 'AC Jet Service & Deep Clean',
+  price: 699,
+  marketPrice: 999,
+  savings: 300,
+  img: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=600&q=80',
+  desc: 'Full deep clean, filter wash, gas top-up check & cooling optimisation for your Daikin FTKF35TV.',
+  badge: '🔥',
+}
 
 const MOCK_UPCOMING = {
   service: 'Split AC Jet Service',
@@ -16,6 +28,7 @@ const WARRANTY_EXPIRING = [
 
 export default function DashboardWidgets() {
   const { user, bookings } = useAuth()
+  const [bookingService, setBookingService] = useState(null)
   if (!user) return null
 
   // Find the next upcoming booking (user-created or mock)
@@ -52,10 +65,11 @@ export default function DashboardWidgets() {
             <div className="text-xs text-amber-600 mt-0.5">Warranty expires in {w.daysLeft} days</div>
           </div>
           <div className="flex flex-col gap-1.5 flex-shrink-0">
-            <Link href="/all-services?q=AC"
+            <button
+              onClick={() => setBookingService(AC_SERVICE)}
               className="bg-sky text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-sky/90 transition text-center">
               Book Service
-            </Link>
+            </button>
             <Link href="/care-plan"
               className="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-amber-600 transition text-center">
               Protect
@@ -64,5 +78,9 @@ export default function DashboardWidgets() {
         </div>
       ))}
     </div>
+
+    {bookingService && (
+      <BookingFlow service={bookingService} onClose={() => setBookingService(null)} />
+    )}
   )
 }
