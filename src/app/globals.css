@@ -17,6 +17,12 @@
 .care-feature:nth-child(2) { animation-delay: 0.15s; }
 .care-feature:nth-child(3) { animation-delay: 0.3s; }
 
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.spin-slow { animation: spin-slow 4s linear infinite; }
+
 @keyframes pulse-ring {
   0%   { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
   70%  { box-shadow: 0 0 0 10px rgba(255,255,255,0); }
