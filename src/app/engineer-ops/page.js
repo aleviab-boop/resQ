@@ -192,8 +192,7 @@ export default function EngineerOpsPage() {
           <span>/</span>
           <span className="text-gray-900 font-semibold">Engineer Ops</span>
           <span className="ml-auto inline-flex items-center gap-1.5 text-xs bg-navy text-white px-2.5 py-1 rounded-full font-semibold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Live
+            Simulated · Updated {timestamp || '—'}
           </span>
         </div>
       </div>

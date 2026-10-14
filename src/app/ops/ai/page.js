@@ -28,6 +28,25 @@ const AUTOMATION_RULES = [
   { id: 'AR04', trigger: 'Parts ETA > 7 days',  action: 'Proactive customer notification via WhatsApp',      team: 'CX' },
 ]
 
+function getInsightResult(id) {
+  switch (id) {
+    case 'AI001': return (
+      <span>Action queued: Redeploy T002 to Andheri for 3 days. Requires dispatch manager approval.{' '}
+        <a href="/ops/dispatch" className="underline font-semibold">View dispatch →</a>
+      </span>
+    )
+    case 'AI002': return 'Purchase order raised for 10x BRN-BSH-WM-01 (simulated). Parts team notified.'
+    case 'AI003': return 'T005 Rohan Nair assigned to CS001. Slot: 15 Oct 10:00–12:00. Customer WhatsApp queued (simulated).'
+    case 'AI004': return (
+      <span>CS001 job records flagged for review. Payment hold activated (simulated).{' '}
+        <a href="/fraud-ops" className="underline font-semibold">View fraud ops →</a>
+      </span>
+    )
+    case 'AI005': return 'Recovery case CS006 escalated. Auto-apology WhatsApp + ₹300 goodwill coupon queued (simulated). Requires manager approval.'
+    default: return 'Action applied (simulated).'
+  }
+}
+
 function ConfidenceBar({ value }) {
   const pct = Math.round(value * 100)
   const color = pct >= 90 ? '#10b981' : pct >= 75 ? SKY : '#f59e0b'
@@ -46,6 +65,7 @@ export default function AIPage() {
   const [filter, setFilter]         = useState('all')
   const [toggles, setToggles]       = useState({ AR01: true, AR02: true, AR03: true, AR04: true })
   const [refreshing, setRefreshing] = useState(false)
+  const [appliedActions, setAppliedActions] = useState({})   // insightId -> result text
 
   function dismiss(id) { setDismissed(d => [...d, id]) }
 
@@ -198,10 +218,11 @@ export default function AIPage() {
                   {/* Actions */}
                   <div className="flex gap-2 pt-1">
                     <button
+                      onClick={() => setAppliedActions(a => ({ ...a, [insight.id]: true }))}
                       className="flex-1 py-2 rounded-xl text-sm font-semibold text-white transition"
-                      style={{ background: SKY }}
+                      style={{ background: appliedActions[insight.id] ? '#10b981' : SKY }}
                     >
-                      Apply Recommendation
+                      {appliedActions[insight.id] ? 'Applied (simulated)' : 'Apply Recommendation'}
                     </button>
                     <button
                       onClick={() => dismiss(insight.id)}
@@ -210,6 +231,11 @@ export default function AIPage() {
                       Dismiss
                     </button>
                   </div>
+                  {appliedActions[insight.id] && (
+                    <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-800">
+                      {getInsightResult(insight.id)}
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -274,44 +300,64 @@ export default function AIPage() {
               Manage Rules →
             </a>
           </div>
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm divide-y divide-gray-100">
-            {AUTOMATION_RULES.map(rule => (
-              <div key={rule.id} className="flex items-center gap-4 px-5 py-4">
-                {/* Toggle */}
-                <button
-                  onClick={() => toggleRule(rule.id)}
-                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ${toggles[rule.id] ? 'bg-green-500' : 'bg-gray-200'}`}
-                  role="switch"
-                  aria-checked={toggles[rule.id]}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ${toggles[rule.id] ? 'translate-x-5' : 'translate-x-0'}`}
-                  />
-                </button>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-gray-400 font-mono">{rule.id}</span>
-                    <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{rule.team}</span>
-                  </div>
-                  <div className="mt-0.5">
-                    <span className="text-sm font-semibold text-gray-800">
-                      IF <span className="text-red-600 font-bold">{rule.trigger}</span>
-                    </span>
-                    <span className="text-sm text-gray-500"> → {rule.action}</span>
-                  </div>
-                </div>
-
-                {/* Status + Edit */}
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${toggles[rule.id] ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                    {toggles[rule.id] ? 'Active' : 'Paused'}
-                  </span>
-                  <button className="text-xs text-gray-400 hover:text-gray-700 border border-gray-200 px-2.5 py-1 rounded-lg transition">
-                    Edit
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+            {AUTOMATION_RULES.map((rule, idx) => (
+              <div key={rule.id} className={idx > 0 ? 'border-t border-gray-100' : ''}>
+                <div className="flex items-center gap-4 px-5 py-4">
+                  {/* Toggle */}
+                  <button
+                    onClick={() => toggleRule(rule.id)}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ${toggles[rule.id] ? 'bg-green-500' : 'bg-gray-200'}`}
+                    role="switch"
+                    aria-checked={toggles[rule.id]}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ${toggles[rule.id] ? 'translate-x-5' : 'translate-x-0'}`}
+                    />
                   </button>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-gray-400 font-mono">{rule.id}</span>
+                      <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{rule.team}</span>
+                    </div>
+                    <div className="mt-0.5">
+                      <span className="text-sm font-semibold text-gray-800">
+                        IF <span className="text-red-600 font-bold">{rule.trigger}</span>
+                      </span>
+                      <span className="text-sm text-gray-500"> → {rule.action}</span>
+                    </div>
+                    <div className="mt-0.5 text-xs text-gray-400 italic">(rule-based, not connected to notification service)</div>
+                  </div>
+
+                  {/* Status + Edit */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${toggles[rule.id] ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                      {toggles[rule.id] ? 'Active' : 'Paused'}
+                    </span>
+                    <button className="text-xs text-gray-400 hover:text-gray-700 border border-gray-200 px-2.5 py-1 rounded-lg transition">
+                      Edit
+                    </button>
+                  </div>
                 </div>
+                {/* Side effects when rule is ON */}
+                {toggles[rule.id] && rule.id === 'AR01' && (
+                  <div className="mx-5 mb-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+                    <span className="font-bold">1 customer meets this condition:</span> Deepak Joshi (NPS 3). Recovery case CS006 has been created (simulated).{' '}
+                    <a href="/ops/cases/CS006" className="text-[#00a1e1] hover:underline font-semibold">View case →</a>
+                  </div>
+                )}
+                {toggles[rule.id] && rule.id === 'AR02' && (
+                  <div className="mx-5 mb-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+                    <span className="font-bold">2 cases currently in breach:</span> CS001, CS006. Manager WhatsApp alert queued (simulated). No action taken — approval required.
+                  </div>
+                )}
+                {toggles[rule.id] && rule.id === 'AR04' && (
+                  <div className="mx-5 mb-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+                    <span className="font-bold">1 case affected:</span> CS003 (drum bearing ETA ~5 days from order date). Customer notification queued (simulated).
+                  </div>
+                )}
               </div>
             ))}
           </div>

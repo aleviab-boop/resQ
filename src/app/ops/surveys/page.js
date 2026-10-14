@@ -24,12 +24,229 @@ function getCaseTitle(caseId) {
   return CASES.find(c => c.id === caseId)?.title ?? caseId
 }
 
+function calcNPS(responses) {
+  const valid = responses.filter(r => r.answers?.q1 != null)
+  if (valid.length === 0) return null
+  const promoters  = valid.filter(r => r.answers.q1 >= 9).length
+  const detractors = valid.filter(r => r.answers.q1 <= 6).length
+  return Math.round(((promoters - detractors) / valid.length) * 100)
+}
+
+function calcAvgScore(responses) {
+  const valid = responses.filter(r => r.answers?.q1 != null)
+  if (valid.length === 0) return null
+  return (valid.reduce((s, r) => s + r.answers.q1, 0) / valid.length).toFixed(1)
+}
+
 const TRIGGER_OPTIONS = ['case-resolved', 'order-completed', 'weekly-feedback']
 const QUESTION_TYPES  = ['NPS', 'Scale 1-5', 'Text', 'Yes-No']
 const RECOVERY_ACTIONS = ['Create case', 'Send WhatsApp', 'Assign to senior']
 
 function newQuestion() {
   return { id: Date.now(), type: 'NPS', text: '' }
+}
+
+// ── CUSTOMER NPS TAB ─────────────────────────────────────────────────────────
+function CustomerNPSTab() {
+  const svcResponses   = SURVEYS[0].responses
+  const storeResponses = SURVEYS[1].responses
+
+  const serviceNPSScore = calcNPS(svcResponses) ?? 0
+  const storeNPSScore   = storeResponses.length > 0 ? calcNPS(storeResponses) : null
+
+  const customerRows = [
+    { id: 'C001', name: 'Priya Mehta',  serviceNPS: 9,    serviceCaseId: 'CS007', storeNPS: null, serviceDate: '12 Aug 2026', recoveryCase: null },
+    { id: 'C006', name: 'Deepak Joshi', serviceNPS: 3,    serviceCaseId: 'CS005', storeNPS: null, serviceDate: '9 Oct 2026',  recoveryCase: 'CS006' },
+    { id: 'C002', name: 'Ramesh Iyer',  serviceNPS: null, serviceCaseId: null,    storeNPS: null, serviceDate: null,          recoveryCase: null },
+    { id: 'C003', name: 'Anita Sharma', serviceNPS: null, serviceCaseId: null,    storeNPS: null, serviceDate: null,          recoveryCase: null },
+    { id: 'C004', name: 'Vikram Nair',  serviceNPS: null, serviceCaseId: null,    storeNPS: null, serviceDate: null,          recoveryCase: null },
+    { id: 'C005', name: 'Sunita Patel', serviceNPS: null, serviceCaseId: null,    storeNPS: null, serviceDate: null,          recoveryCase: null },
+  ]
+
+  const promoters  = customerRows.filter(c => c.serviceNPS !== null && c.serviceNPS >= 9)
+  const detractors = customerRows.filter(c => c.serviceNPS !== null && c.serviceNPS <= 6)
+
+  const trendMonths = ['Jul', 'Aug', 'Sep', 'Oct']
+  const svcTrend    = [20, 10, 0, 0]
+  const storeTrend  = [35, 40, 30, null]
+  const chartMax    = 50
+
+  return (
+    <div className="space-y-8">
+
+      {/* Section 1 — NPS comparison header */}
+      <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Service NPS</div>
+            <div className={`text-6xl font-extrabold mb-2 ${serviceNPSScore >= 50 ? 'text-green-600' : serviceNPSScore >= 0 ? 'text-amber-500' : 'text-red-600'}`}>
+              {serviceNPSScore}
+            </div>
+            <div className="text-sm text-gray-400">Post-service feedback · {svcResponses.length} responses</div>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Store NPS</div>
+            {storeNPSScore === null ? (
+              <div className="text-xl font-bold text-gray-400 mb-2">No NPS data — {storeResponses.length} responses needed</div>
+            ) : (
+              <div className={`text-6xl font-extrabold mb-2 ${storeNPSScore >= 50 ? 'text-green-600' : storeNPSScore >= 0 ? 'text-amber-500' : 'text-red-600'}`}>
+                {storeNPSScore}
+              </div>
+            )}
+            <div className="text-sm text-gray-400">Store purchase feedback · {storeResponses.length} responses</div>
+          </div>
+        </div>
+        <div className="text-xs text-center text-gray-400 bg-white rounded-lg py-2.5 px-4 border border-gray-100">
+          NPS = % Promoters (9–10) minus % Detractors (0–6). Industry benchmark: +40 is good.
+        </div>
+      </div>
+
+      {/* Section 2 — Per-customer NPS history */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100">
+          <h2 className="font-extrabold text-gray-900">Per-Customer NPS History</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-gray-500 text-xs font-semibold uppercase tracking-wider">
+              <tr>
+                <th className="px-4 py-2 text-left">Customer</th>
+                <th className="px-4 py-2 text-center">Last Service NPS</th>
+                <th className="px-4 py-2 text-center">Last Store NPS</th>
+                <th className="px-4 py-2 text-left">Service Date</th>
+                <th className="px-4 py-2 text-left">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {customerRows.map(c => (
+                <tr key={c.id}
+                  className={`border-t border-gray-100 ${c.serviceNPS !== null && c.serviceNPS <= 6 ? 'bg-red-50' : 'hover:bg-gray-50'}`}>
+                  <td className="px-4 py-3 font-medium text-gray-800">
+                    {c.name}
+                    <span className="ml-1.5 text-xs text-gray-400">{c.id}</span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {c.serviceNPS !== null ? (
+                      <>
+                        <span className={`inline-block font-bold px-2 py-0.5 rounded-full text-xs mr-1 ${c.serviceNPS >= 9 ? 'bg-green-100 text-green-700' : c.serviceNPS >= 7 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                          {c.serviceNPS}
+                        </span>
+                        {c.serviceCaseId && <span className="text-xs text-gray-400">({c.serviceCaseId})</span>}
+                      </>
+                    ) : <span className="text-gray-300">—</span>}
+                  </td>
+                  <td className="px-4 py-3 text-center text-gray-300">—</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs">
+                    {c.serviceDate ?? <span className="text-gray-300">—</span>}
+                  </td>
+                  <td className="px-4 py-3">
+                    {c.serviceNPS !== null && c.serviceNPS <= 6 && c.recoveryCase ? (
+                      <span className="inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                        Recovery triggered
+                      </span>
+                    ) : <span className="text-gray-300 text-xs">—</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Section 3 — NPS Trend (div-based chart) */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-extrabold text-gray-900">NPS Trend</h2>
+          <span className="text-xs text-gray-400 italic bg-gray-50 border border-gray-100 px-3 py-1 rounded-full">
+            Simulated data · Jul–Oct 2026
+          </span>
+        </div>
+        <div className="flex gap-3 items-end" style={{ height: '140px' }}>
+          {trendMonths.map((month, i) => (
+            <div key={month} className="flex-1 flex flex-col items-center">
+              <div className="w-full flex gap-1 items-end" style={{ height: '112px' }}>
+                <div className="flex-1 flex flex-col justify-end h-full">
+                  <div
+                    className="w-full rounded-t bg-[#00a1e1] transition-all"
+                    style={{ height: `${Math.max(3, Math.round((Math.max(0, svcTrend[i]) / chartMax) * 112))}px` }}
+                    title={`Service NPS: ${svcTrend[i] >= 0 ? '+' : ''}${svcTrend[i]}`}
+                  />
+                </div>
+                <div className="flex-1 flex flex-col justify-end h-full">
+                  {storeTrend[i] !== null ? (
+                    <div
+                      className="w-full rounded-t bg-[#13347b] transition-all"
+                      style={{ height: `${Math.max(3, Math.round((Math.max(0, storeTrend[i]) / chartMax) * 112))}px` }}
+                      title={`Store NPS: ${storeTrend[i] >= 0 ? '+' : ''}${storeTrend[i]}`}
+                    />
+                  ) : (
+                    <div className="w-full rounded-t bg-gray-100 border border-dashed border-gray-200" style={{ height: '12px' }} title="No store NPS data for Oct" />
+                  )}
+                </div>
+              </div>
+              <div className="text-xs text-gray-600 font-semibold mt-1">{month}</div>
+              <div className="text-[10px] text-gray-400 mt-0.5 text-center">
+                <span className="text-[#00a1e1] font-medium">{svcTrend[i] >= 0 ? '+' : ''}{svcTrend[i]}</span>
+                {' / '}
+                <span className="text-[#13347b] font-medium">{storeTrend[i] !== null ? (storeTrend[i] >= 0 ? '+' : '') + storeTrend[i] : '—'}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-5 mt-3 justify-center text-xs text-gray-500">
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-sm inline-block bg-[#00a1e1]" />
+            Service NPS
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-sm inline-block bg-[#13347b]" />
+            Store NPS
+          </span>
+        </div>
+      </div>
+
+      {/* Section 4 — Promoter/Detractor breakdown */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <h3 className="font-extrabold text-green-700 mb-3">Promoters (score 9–10)</h3>
+          {promoters.length === 0 ? (
+            <p className="text-gray-400 text-sm">No promoters yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {promoters.map(c => (
+                <div key={c.id} className="flex items-center justify-between bg-green-50 rounded-lg px-3 py-2">
+                  <span className="font-medium text-gray-800 text-sm">{c.name}</span>
+                  <span className="text-xs font-bold bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full">{c.serviceNPS}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <h3 className="font-extrabold text-red-700 mb-3">Detractors (score 0–6)</h3>
+          {detractors.length === 0 ? (
+            <p className="text-gray-400 text-sm">No detractors.</p>
+          ) : (
+            <div className="space-y-2">
+              {detractors.map(c => (
+                <div key={c.id} className="bg-red-50 rounded-lg px-3 py-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-800 text-sm">{c.name}</span>
+                    <span className="text-xs font-bold bg-red-100 text-red-700 px-2.5 py-0.5 rounded-full">{c.serviceNPS}</span>
+                  </div>
+                  {c.recoveryCase && (
+                    <a href={`/ops/cases/${c.recoveryCase}`} className="text-xs text-[#00a1e1] hover:underline font-semibold mt-1 inline-block">
+                      Recovery case: {c.recoveryCase} →
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 // ── Summary tiles ─────────────────────────────────────────────────────────────
@@ -50,8 +267,18 @@ function ResponsesTab() {
       {/* Summary tiles */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <SummaryTile label="Response Rate" value="68%" sub="across all surveys" color="text-[#00a1e1]" />
-        <SummaryTile label="Avg Service NPS" value="6.2" sub="Post-Service survey" color="text-amber-500" />
-        <SummaryTile label="Avg Store NPS" value="7.4" sub="Store Purchase survey" color="text-green-600" />
+        <SummaryTile
+          label="Service NPS"
+          value={calcNPS(SURVEYS[0].responses) ?? '— No responses yet'}
+          sub="post-service"
+          color={calcNPS(SURVEYS[0].responses) == null ? 'text-gray-400' : calcNPS(SURVEYS[0].responses) >= 50 ? 'text-green-600' : 'text-amber-500'}
+        />
+        <SummaryTile
+          label="Store NPS"
+          value={calcNPS(SURVEYS[1].responses) ?? '— No responses yet'}
+          sub="store purchase"
+          color={calcNPS(SURVEYS[1].responses) == null ? 'text-gray-400' : calcNPS(SURVEYS[1].responses) >= 50 ? 'text-green-600' : 'text-amber-500'}
+        />
         <SummaryTile label="Recovery Triggered" value="1" sub="auto-case created" color="text-red-600" />
       </div>
 
@@ -70,7 +297,8 @@ function ResponsesTab() {
               <span>Trigger: <strong className="text-gray-700">{survey.trigger}</strong></span>
               <span>{survey.questions.length} questions</span>
               <span>{survey.responses.length} responses</span>
-              <span>Avg NPS: <strong className={npsColor(survey.avgNps)}>{survey.avgNps}</strong></span>
+              <span>NPS: <strong className={npsColor(calcNPS(survey.responses))}>{calcNPS(survey.responses) ?? '—'}</strong></span>
+              <span>Avg score: <strong className={npsColor(Number(calcAvgScore(survey.responses)))}>{calcAvgScore(survey.responses) ?? '—'}</strong></span>
             </div>
           </div>
 
@@ -383,6 +611,7 @@ export default function SurveysPage() {
         {[
           { key: 'responses', label: 'Survey Responses' },
           { key: 'builder',   label: 'Survey Builder' },
+          { key: 'nps',       label: 'Customer NPS' },
         ].map(tab => (
           <button
             key={tab.key}
@@ -398,7 +627,7 @@ export default function SurveysPage() {
         ))}
       </div>
 
-      {activeTab === 'responses' ? <ResponsesTab /> : <BuilderTab />}
+      {activeTab === 'responses' ? <ResponsesTab /> : activeTab === 'builder' ? <BuilderTab /> : <CustomerNPSTab />}
     </div>
   )
 }

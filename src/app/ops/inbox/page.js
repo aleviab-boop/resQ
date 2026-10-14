@@ -30,6 +30,14 @@ const TEMPLATE_LABELS = {
   'apology-voucher':            'Apology + Voucher',
 }
 
+const TEMPLATE_TEXTS = {
+  'installation-delay-apology': 'We sincerely apologise for the delay in scheduling your installation. Our team is prioritising your case and will contact you within 24 hours.',
+  'slot-confirmation':          'Your service has been scheduled for [DATE] between [TIME]. Your technician [NAME] will contact you 30 minutes before arrival.',
+  'technician-assigned':        '[NAME] has been assigned to your case. They will arrive between [TIME]. You can reach them at [PHONE].',
+  'parts-delay-update':         'The part required for your repair has been ordered and is expected to arrive by [DATE]. We will contact you to schedule the revisit.',
+  'recovery-callback':          'We are sorry to hear about your experience. Our senior team member will call you within 2 hours to resolve this.',
+}
+
 function relativeTime(dateStr) {
   const date = new Date(dateStr)
   const now = new Date()
@@ -80,23 +88,47 @@ export default function InboxPage() {
   const [composeText, setComposeText]       = useState('')
   const [composeChannel, setComposeChannel] = useState('whatsapp')
   const [isNote, setIsNote]                 = useState(false)
+  const [localMessages, setLocalMessages]   = useState({})
+  const [toast, setToast]                   = useState(null)
 
   const filteredConvs = CONVERSATIONS.filter(c => activeTab === 'all' || c.channel === activeTab)
   const selectedConv  = CONVERSATIONS.find(c => c.id === selectedConvId) ?? null
   const selectedCustomer = selectedConv ? getCustomer(selectedConv.customerId) : null
   const selectedCase  = selectedConv ? getCase(selectedConv.caseId) : null
-  const groupedMessages = selectedConv ? groupMessagesByDate(selectedConv.messages) : []
+
+  // Merge seeded messages with locally sent ones
+  const allMessages = selectedConv
+    ? [...selectedConv.messages, ...(localMessages[selectedConvId] || [])]
+    : []
+  const groupedMessages = groupMessagesByDate(allMessages)
 
   const unreadCount = CONVERSATIONS.filter(c => c.status === 'open').length
 
   function handleSend() {
-    if (!composeText.trim()) return
+    if (!composeText.trim() || !selectedConvId) return
+    const newMsg = {
+      id:      `local-${Date.now()}`,
+      from:    'agent',
+      text:    composeText.trim(),
+      time:    new Date().toISOString(),
+      channel: isNote ? 'internal' : composeChannel,
+      agent:   'You',
+    }
+    setLocalMessages(prev => ({
+      ...prev,
+      [selectedConvId]: [...(prev[selectedConvId] || []), newMsg],
+    }))
+    const toastText = isNote
+      ? 'Note saved — internal only'
+      : `Sent via ${CHANNEL_LABEL[composeChannel] || composeChannel}`
+    setToast(toastText)
+    setTimeout(() => setToast(null), 2200)
     setComposeText('')
     setIsNote(false)
   }
 
   return (
-    <div style={{ height: '100vh' }} className="flex flex-col bg-gray-50 overflow-hidden">
+    <div style={{ height: '100vh' }} className="flex flex-col bg-gray-50 overflow-hidden relative">
 
       {/* Breadcrumb bar */}
       <div className="bg-white border-b border-gray-100 px-6 py-2.5 flex items-center gap-2 text-xs text-gray-400 flex-shrink-0">
@@ -104,6 +136,14 @@ export default function InboxPage() {
         <span>›</span>
         <span className="text-gray-700 font-semibold">Omnichannel Inbox</span>
       </div>
+
+      {/* Toast notification */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-green-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg animate-fade-in">
+          <span>✓</span>
+          <span>{toast}</span>
+        </div>
+      )}
 
       {/* Two-column layout */}
       <div className="flex flex-1 overflow-hidden min-h-0">
@@ -340,8 +380,9 @@ export default function InboxPage() {
                     {selectedConv.templates.map(tpl => (
                       <button
                         key={tpl}
-                        onClick={() => setComposeText(prev => prev ? prev + ' ' + `[${TEMPLATE_LABELS[tpl] ?? tpl}]` : `[${TEMPLATE_LABELS[tpl] ?? tpl}]`)}
+                        onClick={() => setComposeText(TEMPLATE_TEXTS[tpl] ?? TEMPLATE_LABELS[tpl] ?? tpl)}
                         className="text-[10px] font-semibold text-[#00a1e1] bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2.5 py-1 rounded-full transition"
+                        title={TEMPLATE_TEXTS[tpl] ? TEMPLATE_TEXTS[tpl].slice(0, 80) + '…' : ''}
                       >
                         {TEMPLATE_LABELS[tpl] ?? tpl}
                       </button>

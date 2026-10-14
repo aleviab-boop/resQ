@@ -12,6 +12,8 @@ import {
   PRODUCTS,
   CHANNEL_ICONS,
   CASE_STATUS_COLORS,
+  PARTS_INVENTORY,
+  BRANDS,
   getTechnician,
   getCustomer,
   getProduct,
@@ -20,6 +22,13 @@ import {
   getConversationForCase,
   getCenter,
 } from '@/lib/platformData'
+import {
+  getCaseStatus,
+  setCaseStatus,
+  getMessages as getLocalMessages,
+  addMessage as persistMessage,
+  getBookedSlot,
+} from '@/lib/platformState'
 
 const PRIORITY_DOT = {
   high:   'bg-red-500',
@@ -244,6 +253,20 @@ function buildTimeline(caseData, conversation, tickets, jobs) {
   return events
 }
 
+// Parts cost estimates for cases where partsUsed[] is empty but diagnosis implies parts
+const CASE_PARTS_ESTIMATE = {
+  'CS002': 3080, // Gas refill R32 (₹680) + estimated PCB (₹2,400)
+  'CS003': 1800, // Drum bearing (₹1,800)
+}
+
+const TEMPLATE_TEXTS = {
+  'installation-delay-apology': 'We sincerely apologise for the delay in scheduling your installation. Our team is prioritising your case and will contact you within 24 hours.',
+  'slot-confirmation':          'Your service has been scheduled for [DATE] between [TIME]. Your technician [NAME] will contact you 30 minutes before arrival.',
+  'technician-assigned':        '[NAME] has been assigned to your case. They will arrive between [TIME]. You can reach them at [PHONE].',
+  'parts-delay-update':         'The part required for your repair has been ordered and is expected to arrive by [DATE]. We will contact you to schedule the revisit.',
+  'recovery-callback':          'We are sorry to hear about your experience. Our senior team member will call you within 2 hours to resolve this.',
+}
+
 function MessageTagsFromText(text) {
   const tags = []
   const lower = text.toLowerCase()
@@ -266,6 +289,16 @@ export default function CaseDetailPage() {
   const [composeText, setComposeText] = useState('')
   const [composeChannel, setComposeChannel] = useState('whatsapp')
 
+  // platformState: persisted status override and locally-added messages
+  const [overrideStatus, setOverrideStatus] = useState(() => getCaseStatus(id))
+  const [localMessages, setLocalMessages] = useState(() => {
+    const conv = CONVERSATIONS.find(c => c.caseId === id)
+    return conv ? getLocalMessages(conv.id) : []
+  })
+  const [caseToast, setCaseToast] = useState(null)
+  // platformState: booked slot from promise engine
+  const bookedSlot = getBookedSlot(id)
+
   const caseData = useMemo(() => CASES.find(c => c.id === id), [id])
   const customer = useMemo(() => caseData ? getCustomer(caseData.customerId) : null, [caseData])
   const product = useMemo(() => caseData ? getProduct(caseData.productId) : null, [caseData])
@@ -275,7 +308,14 @@ export default function CaseDetailPage() {
   const jobs = useMemo(() => caseData ? getJobsForCase(caseData.id) : [], [caseData])
   const conversation = useMemo(() => caseData ? getConversationForCase(caseData.id) : null, [caseData])
 
-  const messages = conversation?.messages || []
+  // Effective status: agent override takes priority over seed data
+  const effectiveStatus = overrideStatus || caseData?.status || 'open'
+
+  // Merge seeded messages with any locally-added ones
+  const messages = useMemo(() => {
+    const seeded = conversation?.messages || []
+    return [...seeded, ...localMessages].sort((a, b) => new Date(a.time) - new Date(b.time))
+  }, [conversation, localMessages])
 
   const filteredMessages = useMemo(() => {
     if (activeTab === 'everything') return messages
@@ -332,14 +372,28 @@ export default function CaseDetailPage() {
     )
   }
 
-  const statusClass = CASE_STATUS_COLORS[caseData.status] || 'bg-gray-100 text-gray-500'
+  const statusClass = CASE_STATUS_COLORS[effectiveStatus] || 'bg-gray-100 text-gray-500'
   const priorityDot = PRIORITY_DOT[caseData.priority] || 'bg-gray-300'
   const typeBadge = TYPE_BADGE[caseData.type] || 'bg-gray-100 text-gray-600'
   const channelIcon = CHANNEL_ICONS[caseData.channel] || '📋'
   const sla = slaCountdown(caseData.slaDeadline)
 
+  const STATUS_OPTIONS = ['open', 'in-progress', 'parts-awaited', 'scheduled', 'resolved', 'completed', 'closed']
+  function handleStatusChange(newStatus) {
+    setOverrideStatus(newStatus)
+    setCaseStatus(id, newStatus)
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-gray-100 font-sans text-gray-800">
+
+      {/* Toast notification */}
+      {caseToast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-green-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg pointer-events-none">
+          <span>✓</span>
+          <span>{caseToast}</span>
+        </div>
+      )}
 
       {/* ── LEFT PANEL ─────────────────────────────────────────────────── */}
       <div className="flex flex-col" style={{ width: '65%', minWidth: 0 }}>
@@ -355,9 +409,16 @@ export default function CaseDetailPage() {
 
           {/* Row 2: Status + priority + channel + SLA */}
           <div className="flex items-center gap-3 mb-3">
-            <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${statusClass}`}>
-              {caseData.status.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
-            </span>
+            <select
+              value={effectiveStatus}
+              onChange={e => handleStatusChange(e.target.value)}
+              className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-sky-400 ${statusClass}`}
+              title="Change case status"
+            >
+              {STATUS_OPTIONS.map(s => (
+                <option key={s} value={s}>{s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</option>
+              ))}
+            </select>
             <span className={`w-2.5 h-2.5 rounded-full ${priorityDot}`} title={`${caseData.priority} priority`} />
             <span className="text-sm" title={caseData.channel}>{channelIcon}</span>
             {caseData.slaBreached ? (
@@ -619,6 +680,22 @@ export default function CaseDetailPage() {
                   </button>
                 ))}
               </div>
+              {/* Quick template chips */}
+              <div className="px-3 py-2 flex flex-wrap gap-1.5 border-b border-gray-100">
+                {(conversation?.templates ?? Object.keys(TEMPLATE_TEXTS)).map(tpl =>
+                  TEMPLATE_TEXTS[tpl] ? (
+                    <button
+                      key={tpl}
+                      type="button"
+                      onClick={() => setComposeText(TEMPLATE_TEXTS[tpl])}
+                      className="text-[10px] font-semibold text-[#00a1e1] bg-sky-50 hover:bg-sky-100 border border-sky-200 px-2 py-1 rounded-full transition"
+                      title={TEMPLATE_TEXTS[tpl].slice(0, 80)}
+                    >
+                      {tpl.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                    </button>
+                  ) : null
+                )}
+              </div>
               <textarea
                 value={composeText}
                 onChange={e => setComposeText(e.target.value)}
@@ -638,6 +715,22 @@ export default function CaseDetailPage() {
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
                   disabled={!composeText.trim()}
+                  onClick={() => {
+                    if (!composeText.trim()) return
+                    const convId = conversation?.id || `CV-${id}`
+                    const msg = {
+                      from: 'agent',
+                      text: composeText.trim(),
+                      time: new Date().toISOString(),
+                      channel: composeChannel,
+                      agent: 'You',
+                    }
+                    persistMessage(convId, msg)
+                    setLocalMessages(prev => [...prev, { id: `local-${Date.now()}`, ...msg }])
+                    setCaseToast(`Sent via ${composeChannel.charAt(0).toUpperCase() + composeChannel.slice(1)}`)
+                    setTimeout(() => setCaseToast(null), 2200)
+                    setComposeText('')
+                  }}
                 >
                   Send
                 </button>
@@ -810,6 +903,27 @@ export default function CaseDetailPage() {
                 </div>
               )}
 
+              {/* Booked slot from promise engine */}
+              {bookedSlot && (
+                <div>
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Booked Slot</div>
+                  <div className="bg-sky-50 border border-sky-200 rounded-lg px-3 py-2 space-y-0.5">
+                    <div className="text-[12px] font-semibold text-sky-800">
+                      {bookedSlot.date} &nbsp;·&nbsp; {bookedSlot.window}
+                    </div>
+                    {bookedSlot.technicianId && (
+                      <div className="text-[11px] text-sky-700">
+                        Tech: {getTechnician(bookedSlot.technicianId)?.name || bookedSlot.technicianId}
+                      </div>
+                    )}
+                    {bookedSlot.centerId && (
+                      <div className="text-[11px] text-sky-600">{getCenter(bookedSlot.centerId)?.name || bookedSlot.centerId}</div>
+                    )}
+                    <div className="text-[9px] text-sky-400 pt-0.5">Booked via Promise Engine</div>
+                  </div>
+                </div>
+              )}
+
               {caseData.tags?.length > 0 && (
                 <div>
                   <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Tags</div>
@@ -820,6 +934,74 @@ export default function CaseDetailPage() {
                   </div>
                 </div>
               )}
+
+              {/* ── JOB ECONOMICS CARD ── */}
+              {(() => {
+                const partsSkus = jobs.flatMap(j => (j.visits || []).flatMap(v => v.partsUsed || []))
+                const partsFromSkus = partsSkus.reduce((sum, sku) => {
+                  const part = PARTS_INVENTORY.find(p => p.sku === sku)
+                  return sum + (part?.price || 0)
+                }, 0)
+                const partsTotal = partsFromSkus > 0 ? partsFromSkus : (CASE_PARTS_ESTIMATE[caseData.id] || 0)
+                const partsIsEstimated = partsFromSkus === 0 && partsTotal > 0
+                const labour = 299, travel = 85
+                const totalCost = labour + partsTotal + travel
+                const brandMatch = product
+                  ? BRANDS.find(b => b.name.toLowerCase().startsWith((product.brand || '').toLowerCase()))
+                  : null
+                const revenue = brandMatch?.paidPerJob || 0
+                const isOwn = brandMatch?.isOwn || false
+                const margin = revenue - totalCost
+                return (
+                  <div className="border border-gray-200 rounded-xl overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+                      <span className="text-[11px] font-bold text-gray-700 uppercase tracking-wide">Job Economics</span>
+                      <span className="text-[9px] font-bold uppercase tracking-wide bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Simulated</span>
+                    </div>
+                    <div className="px-4 py-3 space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] text-gray-500">Labour <span className="text-gray-400 text-[10px]">· base diagnostic visit</span></span>
+                        <span className="text-[12px] font-medium text-gray-800">₹{labour}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] text-gray-500">Parts{partsIsEstimated ? ' (est.)' : ''}</span>
+                        <span className="text-[12px] font-medium text-gray-800">₹{partsTotal}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] text-gray-500">Travel <span className="text-gray-400 text-[10px]">· flat, simulated</span></span>
+                        <span className="text-[12px] font-medium text-gray-800">₹{travel}</span>
+                      </div>
+                      <div className="flex justify-between items-center border-t border-gray-100 pt-1.5">
+                        <span className="text-[11px] font-semibold text-gray-700">Total cost</span>
+                        <span className="text-[12px] font-bold text-gray-900">₹{totalCost}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] text-gray-500">
+                          {isOwn ? 'Own brand — direct revenue' : brandMatch ? `Revenue (${brandMatch.name} contract)` : 'Revenue'}
+                        </span>
+                        <span className="text-[12px] font-medium text-gray-800">
+                          {isOwn ? '—' : revenue > 0 ? `₹${revenue}` : '—'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center border-t border-gray-100 pt-1.5">
+                        <span className="text-[11px] font-semibold text-gray-700">Margin</span>
+                        <span className={`text-[13px] font-bold ${isOwn ? 'text-gray-400' : margin > 0 ? 'text-green-600' : margin < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                          {isOwn ? 'Cost centre' : `${margin >= 0 ? '+' : '−'}₹${Math.abs(margin)}`}
+                        </span>
+                      </div>
+                      {caseData.slaBreached && (
+                        <div className="flex justify-between items-center pt-0.5">
+                          <span className="text-[11px] text-red-600">SLA breach penalty</span>
+                          <span className="text-[12px] font-semibold text-red-600">−₹500 (estimated)</span>
+                        </div>
+                      )}
+                      <p className="text-[10px] text-gray-400 pt-1 border-t border-gray-100">
+                        Per-job economics. Revisits are costed separately.
+                      </p>
+                    </div>
+                  </div>
+                )
+              })()}
 
               <button className="mt-2 w-full text-[11px] font-medium px-3 py-2 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors">
                 Assign by rule

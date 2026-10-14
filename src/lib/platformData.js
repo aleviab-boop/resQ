@@ -298,17 +298,25 @@ export const CONVERSATIONS = [
 ]
 
 // ─── PARTS INVENTORY (extended) ──────────────────────────────────────────────
+// city derived from centerId: SC001/SC004/SC005 = 'Mumbai', SC002 = 'Navi Mumbai', SC003 = 'Thane'
+// appliance: full display name matching filter options in parts/page.js
 export const PARTS_INVENTORY = [
-  { id: 'PT001', name: 'PCB Controller Board — Samsung AC',  sku: 'PCB-SAMS-AC-01', category: 'AC',            centerId: 'SC001', stock: 8,  reserved: 0, reorderAt: 5,  demand: 12, price: 2400, ageMonths: 18, condition: 'Good' },
-  { id: 'PT002', name: 'Compressor — LG 1.5T',               sku: 'CMP-LG-15T-01',  category: 'AC',            centerId: 'SC001', stock: 2,  reserved: 1, reorderAt: 3,  demand: 4,  price: 8500, ageMonths: 6,  condition: 'Good' },
-  { id: 'PT003', name: 'Drum Bearing — Bosch WM',            sku: 'BRN-BSH-WM-01',  category: 'WM',            centerId: 'SC004', stock: 0,  reserved: 1, reorderAt: 2,  demand: 4,  price: 1800, ageMonths: 0,  condition: 'In Transit', linkedJobId: 'JB004' },
-  { id: 'PT004', name: 'Thermostat — Whirlpool Fridge',      sku: 'THR-WHP-RF-01',  category: 'Refrigerator',  centerId: 'SC001', stock: 15, reserved: 0, reorderAt: 5,  demand: 8,  price: 450,  ageMonths: 4,  condition: 'Good' },
-  { id: 'PT005', name: 'Compressor — Godrej 310L',           sku: 'CMP-GDJ-31-01',  category: 'Refrigerator',  centerId: 'SC001', stock: 1,  reserved: 0, reorderAt: 2,  demand: 3,  price: 7200, ageMonths: 24, condition: 'Defective' },
-  { id: 'PT006', name: 'PCB Board — Whirlpool AC',           sku: 'PCB-WHP-AC-01',  category: 'AC',            centerId: 'SC004', stock: 3,  reserved: 1, reorderAt: 3,  demand: 5,  price: 1650, ageMonths: 8,  condition: 'Good', linkedJobId: 'JB003' },
-  { id: 'PT007', name: 'Refrigerant Gas R32 — 1kg',          sku: 'GAS-R32-1KG-01', category: 'AC',            centerId: 'SC001', stock: 12, reserved: 2, reorderAt: 6,  demand: 14, price: 680,  ageMonths: 3,  condition: 'Good' },
-  { id: 'PT008', name: 'LED Panel — Sony 55"',               sku: 'PNL-SNY-55-01',  category: 'LED TV',        centerId: 'SC005', stock: 4,  reserved: 0, reorderAt: 3,  demand: 5,  price: 6800, ageMonths: 20, condition: 'Good' },
-  { id: 'PT009', name: 'Motor — Bosch WM',                   sku: 'MOT-BSH-WM-01',  category: 'WM',            centerId: 'SC003', stock: 0,  reserved: 0, reorderAt: 3,  demand: 4,  price: 5600, ageMonths: 0,  condition: 'Out of Stock' },
-  { id: 'PT010', name: 'Door Gasket — Samsung Double Door',  sku: 'GSK-SMS-DD-01',  category: 'Refrigerator',  centerId: 'SC002', stock: 22, reserved: 0, reorderAt: 8,  demand: 10, price: 380,  ageMonths: 8,  condition: 'Good' },
+  { id: 'PT001', name: 'PCB Controller Board — Samsung AC',  sku: 'PCB-SAMS-AC-01', category: 'AC',            appliance: 'Air Conditioner', centerId: 'SC001', city: 'Mumbai',     stock: 8,  reserved: 0, reorderAt: 5,  demand: 12, price: 2400, ageMonths: 18, condition: 'Good' },
+  { id: 'PT002', name: 'Compressor — LG 1.5T',               sku: 'CMP-LG-15T-01',  category: 'AC',            appliance: 'Air Conditioner', centerId: 'SC001', city: 'Mumbai',     stock: 2,  reserved: 1, reorderAt: 3,  demand: 4,  price: 8500, ageMonths: 6,  condition: 'Good' },
+  { id: 'PT003', name: 'Drum Bearing — Bosch WM',            sku: 'BRN-BSH-WM-01',  category: 'WM',            appliance: 'Washing Machine', centerId: 'SC004', city: 'Mumbai',     stock: 0,  reserved: 1, reorderAt: 2,  demand: 4,  price: 1800, ageMonths: 0,  condition: 'In Transit', linkedJobId: 'JB004' },
+  { id: 'PT004', name: 'Thermostat — Whirlpool Fridge',      sku: 'THR-WHP-RF-01',  category: 'Refrigerator',  appliance: 'Refrigerator',    centerId: 'SC001', city: 'Mumbai',     stock: 15, reserved: 0, reorderAt: 5,  demand: 8,  price: 450,  ageMonths: 4,  condition: 'Good' },
+  { id: 'PT005', name: 'Compressor — Godrej 310L',           sku: 'CMP-GDJ-31-01',  category: 'Refrigerator',  appliance: 'Refrigerator',    centerId: 'SC001', city: 'Mumbai',     stock: 1,  reserved: 0, reorderAt: 2,  demand: 3,  price: 7200, ageMonths: 24, condition: 'Defective' },
+  { id: 'PT006', name: 'PCB Board — Whirlpool AC',           sku: 'PCB-WHP-AC-01',  category: 'AC',            appliance: 'Air Conditioner', centerId: 'SC004', city: 'Mumbai',     stock: 3,  reserved: 1, reorderAt: 3,  demand: 5,  price: 1650, ageMonths: 8,  condition: 'Good', linkedJobId: 'JB003' },
+  { id: 'PT007', name: 'Refrigerant Gas R32 — 1kg',          sku: 'GAS-R32-1KG-01', category: 'AC',            appliance: 'Air Conditioner', centerId: 'SC001', city: 'Mumbai',     stock: 12, reserved: 2, reorderAt: 6,  demand: 14, price: 680,  ageMonths: 3,  condition: 'Good' },
+  { id: 'PT008', name: 'LED Panel — Sony 55"',               sku: 'PNL-SNY-55-01',  category: 'LED TV',        appliance: 'LED TV',          centerId: 'SC005', city: 'Mumbai',     stock: 4,  reserved: 0, reorderAt: 3,  demand: 5,  price: 6800, ageMonths: 20, condition: 'Good' },
+  { id: 'PT009', name: 'Motor — Bosch WM',                   sku: 'MOT-BSH-WM-01',  category: 'WM',            appliance: 'Washing Machine', centerId: 'SC003', city: 'Thane',      stock: 0,  reserved: 0, reorderAt: 3,  demand: 4,  price: 5600, ageMonths: 0,  condition: 'Out of Stock' },
+  { id: 'PT010', name: 'Door Gasket — Samsung Double Door',  sku: 'GSK-SMS-DD-01',  category: 'Refrigerator',  appliance: 'Refrigerator',    centerId: 'SC002', city: 'Navi Mumbai', stock: 22, reserved: 0, reorderAt: 8,  demand: 10, price: 380,  ageMonths: 8,  condition: 'Good' },
+  // 5 additional SKUs present in parts/page.js but not previously in platformData
+  { id: 'PT011', name: 'Evaporator Coil — Voltas Split',     sku: 'EVP-VLT-SP-01',  category: 'AC',            appliance: 'Air Conditioner', centerId: null,    city: 'Delhi',      stock: 5,  reserved: 0, reorderAt: 3,  demand: 6,  price: 3200, ageMonths: 12, condition: 'Good' },
+  { id: 'PT012', name: 'Drum — LG Front Load 7kg',           sku: 'DRM-LG-FL-01',   category: 'WM',            appliance: 'Washing Machine', centerId: null,    city: 'Mumbai',     stock: 3,  reserved: 0, reorderAt: 2,  demand: 5,  price: 4100, ageMonths: 10, condition: 'Good' },
+  { id: 'PT013', name: 'Heating Element — IFB 6kg',          sku: 'HTE-IFB-06-01',  category: 'WM',            appliance: 'Washing Machine', centerId: null,    city: 'Chennai',    stock: 7,  reserved: 0, reorderAt: 4,  demand: 6,  price: 920,  ageMonths: 14, condition: 'Good' },
+  { id: 'PT014', name: 'Heating Element — V-Guard Geyser',   sku: 'HTE-VGD-GZ-01',  category: 'Geyser',        appliance: 'Geyser',          centerId: null,    city: 'Mumbai',     stock: 18, reserved: 0, reorderAt: 6,  demand: 9,  price: 680,  ageMonths: 5,  condition: 'Good' },
+  { id: 'PT015', name: 'Thermostat — Racold 25L',            sku: 'THR-RCL-25-01',  category: 'Geyser',        appliance: 'Geyser',          centerId: null,    city: 'Hyderabad',  stock: 11, reserved: 0, reorderAt: 5,  demand: 7,  price: 420,  ageMonths: 7,  condition: 'Good' },
 ]
 
 // ─── BRANDS / CONTRACTS ──────────────────────────────────────────────────────
@@ -402,7 +410,7 @@ export const PLATFORM_KPIS = {
   avgResolutionHours: 38,
   repeatVisitRate: 0.22,
   technicianUtilization: 0.71,
-  partsShortages: 2,
+  partsShortages: 2, // stock===0 count: PT003 (Drum Bearing, In Transit) + PT009 (Motor, Out of Stock) = 2; update if inventory changes
   serviceNps: 6.2,
   storeNps: 7.4,
   totalRevenueMTD: 4368400,

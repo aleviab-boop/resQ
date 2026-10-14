@@ -3,16 +3,18 @@ import Link from 'next/link'
 import { PLATFORM_KPIS, CASES, PARTS_INVENTORY, AI_INSIGHTS } from '@/lib/platformData'
 
 // ── System health bar ─────────────────────────────────────────────────────────
-const SYSTEMS = [
-  { name: 'Case Engine',    status: 'green',  note: 'Operational' },
-  { name: 'Dispatch',       status: 'green',  note: 'Operational' },
-  { name: 'Parts',          status: 'amber',  note: '2 shortages' },
-  { name: 'AI Pipeline',    status: 'green',  note: 'Operational' },
-  { name: 'Surveys',        status: 'green',  note: 'Operational' },
-  { name: 'Notifications',  status: 'green',  note: 'Operational' },
-]
+function getSystems(partsShortages) {
+  return [
+    { name: 'Case Engine',    status: 'green',                                  note: 'Simulated' },
+    { name: 'Dispatch',       status: 'green',                                  note: 'Simulated' },
+    { name: 'Parts',          status: partsShortages > 0 ? 'amber' : 'green',  note: partsShortages > 0 ? `${partsShortages} out of stock` : 'In stock' },
+    { name: 'AI Insights',    status: 'green',                                  note: 'Rule-based' },
+    { name: 'Surveys',        status: 'green',                                  note: 'Simulated' },
+    { name: 'Notifications',  status: 'amber',                                  note: 'Not connected' },
+  ]
+}
 
-function HealthBar() {
+function HealthBar({ systems }) {
   const dot = (status) => {
     const cls =
       status === 'green' ? 'bg-green-400' :
@@ -25,7 +27,7 @@ function HealthBar() {
     <div className="bg-white border border-gray-100 rounded-xl px-4 py-3 mb-8 shadow-sm">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
         <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mr-2">System Health</span>
-        {SYSTEMS.map(s => (
+        {systems.map(s => (
           <div key={s.name} className="flex items-center gap-1.5">
             {dot(s.status)}
             <span className="text-xs font-medium text-gray-700">{s.name}</span>
@@ -77,9 +79,11 @@ function ModuleSection({ label, badge, children }) {
 
 // ── PAGE ──────────────────────────────────────────────────────────────────────
 export default function OpsHub() {
-  const openCases       = CASES.filter(c => c.status === 'open' || c.status === 'in-progress').length
+  const openCases       = CASES.filter(c => !['resolved', 'completed', 'closed'].includes(c.status)).length
+  const slaBreached     = CASES.filter(c => c.slaBreached === true).length
   const partsShortages  = PARTS_INVENTORY.filter(p => p.stock === 0).length
   const highAlerts      = AI_INSIGHTS.filter(a => a.priority === 'high').length
+  const systems         = getSystems(partsShortages)
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
@@ -91,7 +95,7 @@ export default function OpsHub() {
       </div>
 
       {/* System health */}
-      <HealthBar />
+      <HealthBar systems={systems} />
 
       {/* MODULE A — Customer Operations */}
       <ModuleSection label="A — Customer Operations" badge="Customer-facing">
@@ -218,10 +222,10 @@ export default function OpsHub() {
         <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Quick Stats</div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Open Cases',           value: 5,  color: 'text-red-600',   bg: 'bg-red-50'    },
-            { label: 'Installation Backlog', value: 14, color: 'text-amber-600', bg: 'bg-amber-50'  },
-            { label: 'Parts Shortages',      value: 2,  color: 'text-orange-600',bg: 'bg-orange-50' },
-            { label: 'Recovery Pending',     value: 1,  color: 'text-purple-600',bg: 'bg-purple-50' },
+            { label: 'Open Cases',           value: openCases,       color: 'text-red-600',   bg: 'bg-red-50'    },
+            { label: 'SLA Breached',         value: slaBreached,     color: 'text-amber-600', bg: 'bg-amber-50'  },
+            { label: 'Parts Shortages',      value: partsShortages,  color: 'text-orange-600',bg: 'bg-orange-50' },
+            { label: 'Recovery Pending',     value: 1,               color: 'text-purple-600',bg: 'bg-purple-50' },
           ].map(s => (
             <div key={s.label} className={`${s.bg} rounded-xl px-4 py-3`}>
               <div className={`text-2xl font-extrabold ${s.color}`}>{s.value}</div>

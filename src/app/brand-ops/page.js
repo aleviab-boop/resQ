@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { CASES, PRODUCTS, CUSTOMERS } from '@/lib/platformData'
 
 // ─── Brand data ────────────────────────────────────────────────────────────────
 const BRANDS = [
@@ -50,6 +51,111 @@ function Tile({ label, value, sub, accent, children }) {
       <p className="text-2xl font-extrabold text-gray-900">{value}</p>
       {sub && <p className="text-xs text-gray-500">{sub}</p>}
       {children}
+    </div>
+  )
+}
+
+// ─── Parts cost estimates used by drill-down economics ────────────────────────
+const DRILL_PARTS_COST = { 'CS002': 3080, 'CS003': 1800 }
+
+// ─── Brand drill-down panel ────────────────────────────────────────────────────
+function BrandDrillDown({ brand, onClose }) {
+  const [flagged, setFlagged] = useState(false)
+
+  // Match real cases where product.brand starts with first word of brand.name
+  const brandKey = brand.name.split(' ')[0]
+  const brandCases = CASES.filter(c => {
+    const prod = PRODUCTS.find(p => p.id === c.productId)
+    return prod?.brand === brand.name || prod?.brand === brandKey
+  }).slice(0, 3)
+
+  function buildRow(c) {
+    const prod     = PRODUCTS.find(p => p.id === c.productId)
+    const customer = CUSTOMERS.find(cu => cu.id === c.customerId)
+    const partsTotal = DRILL_PARTS_COST[c.id] || 0
+    const labour = 299, travel = 85
+    const totalCost = labour + partsTotal + travel
+    const revenue = brand.paidPerJob
+    const margin  = revenue - totalCost
+    return { caseId: c.id, customerName: customer?.name || c.customerId, type: c.type, partsTotal, labour, totalCost, revenue, margin }
+  }
+
+  function syntheticRow(idx) {
+    const types = ['repair', 'installation', 'service']
+    const type = types[idx % 3]
+    const partsTotal = type === 'repair' ? 1200 : 0
+    const labour = 299, travel = 85
+    const totalCost = labour + partsTotal + travel
+    const revenue = brand.paidPerJob
+    const margin  = revenue - totalCost
+    return { caseId: `SIM-0${idx + 1}`, customerName: 'Sample Customer', type, partsTotal, labour, totalCost, revenue, margin }
+  }
+
+  const rows = brandCases.map(c => buildRow(c))
+  while (rows.length < 3) rows.push(syntheticRow(rows.length))
+
+  return (
+    <div className="mt-5 border border-gray-200 rounded-2xl overflow-hidden">
+      <div className="px-5 py-3 flex items-center justify-between border-b border-gray-100" style={{ background: '#eff6ff' }}>
+        <div>
+          <h3 className="text-sm font-bold text-gray-900">Sample job economics — {brand.name}</h3>
+          <p className="text-xs text-gray-400 mt-0.5">Derived from case data · simulated pricing</p>
+        </div>
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-sm font-medium px-2 py-1 rounded hover:bg-gray-100 transition-colors">
+          ✕ Close
+        </button>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs min-w-[700px]">
+          <thead>
+            <tr style={{ background: '#f8faff' }}>
+              {['Job ID', 'Customer', 'Type', 'Parts used', 'Labour', 'Total cost', 'Revenue', 'Margin'].map(col => (
+                <th key={col} className="text-left px-4 py-2.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap">{col}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr key={row.caseId} className={`border-b border-gray-50 hover:bg-white transition-colors ${i % 2 === 1 ? 'bg-gray-50/40' : 'bg-white'}`}>
+                <td className="px-4 py-2.5 font-mono text-gray-500 whitespace-nowrap">{row.caseId}</td>
+                <td className="px-4 py-2.5 text-gray-700 whitespace-nowrap">{row.customerName}</td>
+                <td className="px-4 py-2.5">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-600 capitalize">{row.type}</span>
+                </td>
+                <td className="px-4 py-2.5 text-gray-600">{row.partsTotal > 0 ? `₹${fmt(row.partsTotal)}` : 'None'}</td>
+                <td className="px-4 py-2.5 text-gray-600">₹{row.labour}</td>
+                <td className="px-4 py-2.5 font-semibold text-gray-800">₹{fmt(row.totalCost)}</td>
+                <td className="px-4 py-2.5 text-gray-600">{row.revenue > 0 ? `₹${row.revenue}` : '—'}</td>
+                <td className="px-4 py-2.5">
+                  <span className={`font-bold ${row.margin > 0 ? 'text-emerald-600' : row.margin < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                    {row.margin >= 0 ? '+' : '−'}₹{fmt(Math.abs(row.margin))}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="px-5 py-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3" style={{ background: '#fafafa' }}>
+        <p className="text-xs text-gray-500 max-w-lg">
+          Contract rate vs actual delivery — reviewed quarterly. Renegotiation requires VP approval.
+        </p>
+        <div className="shrink-0">
+          {flagged ? (
+            <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-200">
+              Flagged for renegotiation. Finance team will be notified (simulated).
+            </span>
+          ) : (
+            <button
+              onClick={() => setFlagged(true)}
+              className="text-xs font-bold px-4 py-2 rounded-xl text-white transition hover:opacity-90"
+              style={{ backgroundColor: '#00a1e1' }}
+            >
+              Flag for renegotiation
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
@@ -117,6 +223,7 @@ function NpsBadge({ nps }) {
 // ─── Main page ─────────────────────────────────────────────────────────────────
 export default function BrandOpsPage() {
   const [categoryFilter, setCategoryFilter] = useState('All')
+  const [selectedBrand, setSelectedBrand]   = useState(null)
 
   // ── Derived summary ──────────────────────────────────────────────────────────
   const totalJobs       = BRANDS.reduce((s, b) => s + b.jobsThisMonth, 0)
@@ -293,11 +400,13 @@ export default function BrandOpsPage() {
                   const totalPl = grossProfit(b)
                   const isOwn   = b.isOwnBrand
 
+                  const isSelected = selectedBrand?.id === b.id
                   return (
                     <tr
                       key={b.id}
-                      className={`border-b border-gray-50 hover:bg-gray-50/60 transition-colors ${isOwn ? '' : ''}`}
-                      style={isOwn ? { background: '#f0f9ff' } : {}}
+                      onClick={() => setSelectedBrand(isSelected ? null : b)}
+                      className={`border-b border-gray-50 hover:bg-sky-50/40 transition-colors cursor-pointer ${isSelected ? 'ring-1 ring-inset ring-sky-300' : ''}`}
+                      style={isOwn && !isSelected ? { background: '#f0f9ff' } : isSelected ? { background: '#eff6ff' } : {}}
                     >
                       {/* Brand */}
                       <td className="py-3 pr-4">
@@ -385,6 +494,11 @@ export default function BrandOpsPage() {
               </tbody>
             </table>
           </div>
+
+          {/* ── Brand drill-down ── */}
+          {selectedBrand && (
+            <BrandDrillDown brand={selectedBrand} onClose={() => setSelectedBrand(null)} />
+          )}
         </div>
 
         {/* ── Bottom row: Alert + SLA leaderboard ────────────────────────────── */}
