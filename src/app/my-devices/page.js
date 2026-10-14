@@ -77,13 +77,10 @@ function WarrantyRing({ pctUsed, daysLeft, expiry }) {
 }
 
 export default function MyDevicesPage() {
-  const { user, hydrated } = useAuth()
+  const { user, hydrated, devices, addDevice: ctxAddDevice, removeDevice: ctxRemoveDevice } = useAuth()
   const { t } = useTheme()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
-  const [devices, setDevices] = useState([
-    { id: 1, type: 'Air Conditioner', brand: 'Daikin', model: 'FTKF35TV', serial: 'DK2024001', purchaseDate: '2024-03-15', warrantyYears: '2', expanded: false },
-  ])
   const [showAdd, setShowAdd] = useState(false)
   const [selectedDevice, setSelectedDevice] = useState(null)
   const [form, setForm] = useState({ type: '', brand: '', model: '', serial: '', purchaseDate: '', warrantyYears: '1' })
@@ -94,13 +91,13 @@ export default function MyDevicesPage() {
 
   function addDevice() {
     if (!form.type || !form.brand || !form.model) return
-    setDevices(prev => [...prev, { ...form, id: Date.now(), expanded: false }])
+    ctxAddDevice({ ...form })
     setForm({ type: '', brand: '', model: '', serial: '', purchaseDate: '', warrantyYears: '1' })
     setShowAdd(false)
   }
 
   function removeDevice(id) {
-    setDevices(prev => prev.filter(d => d.id !== id))
+    ctxRemoveDevice(id)
     if (selectedDevice?.id === id) setSelectedDevice(null)
   }
 

@@ -16,15 +16,15 @@ export default function Dashboard() {
   return (
     <div>
       <LocationBar />
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 py-4 space-y-4">
 
         {/* Search bar */}
         <SearchBar />
 
         {/* Greeting */}
         <div>
-          <p className="text-gray-500 text-sm">{t.hello}</p>
-          <h1 className="text-xl font-bold text-gray-900 mt-0.5">{t.welcome}</h1>
+          <h1 className="text-lg font-bold text-gray-900">{t.hello}, {t.welcome}</h1>
+          <p className="text-gray-400 text-xs mt-0.5">{t.tagline}</p>
         </div>
 
         {/* Dashboard Widgets — active booking + warranty nudge */}

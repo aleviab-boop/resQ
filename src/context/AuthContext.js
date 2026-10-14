@@ -7,9 +7,9 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [cart, setCart] = useState([])
   const [bookings, setBookings] = useState([])
+  const [devices, setDevices] = useState([])
   const [hydrated, setHydrated] = useState(false)
 
-  // Restore user and bookings from localStorage on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem('resq_user')
@@ -18,6 +18,10 @@ export function AuthProvider({ children }) {
     try {
       const savedBookings = localStorage.getItem('resq_bookings')
       if (savedBookings) setBookings(JSON.parse(savedBookings))
+    } catch {}
+    try {
+      const savedDevices = localStorage.getItem('resq_devices')
+      if (savedDevices) setDevices(JSON.parse(savedDevices))
     } catch {}
     setHydrated(true)
   }, [])
@@ -31,7 +35,6 @@ export function AuthProvider({ children }) {
   function logout() {
     setUser(null)
     setCart([])
-    // bookings are kept in localStorage so they survive logout/login
     try { localStorage.removeItem('resq_user') } catch {}
   }
 
@@ -51,6 +54,22 @@ export function AuthProvider({ children }) {
     })
   }
 
+  function addDevice(device) {
+    setDevices(prev => {
+      const updated = [...prev, { ...device, id: Date.now() }]
+      try { localStorage.setItem('resq_devices', JSON.stringify(updated)) } catch {}
+      return updated
+    })
+  }
+
+  function removeDevice(id) {
+    setDevices(prev => {
+      const updated = prev.filter(d => d.id !== id)
+      try { localStorage.setItem('resq_devices', JSON.stringify(updated)) } catch {}
+      return updated
+    })
+  }
+
   function addToCart(service) {
     setCart(prev => {
       if (prev.find(s => s.name === service.name)) return prev
@@ -63,7 +82,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUser, cart, addToCart, removeFromCart, bookings, addBooking, hydrated }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, cart, addToCart, removeFromCart, bookings, addBooking, devices, addDevice, removeDevice, hydrated }}>
       {children}
     </AuthContext.Provider>
   )
