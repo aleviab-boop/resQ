@@ -32,6 +32,7 @@ export default function Navbar() {
     { href: '/care-plan', label: t.navCare },
     { href: '/my-devices', label: t.navDevices },
     { href: '/locate', label: t.navLocate },
+    { href: '/ops', label: 'Ops' },
   ]
 
   function handleLogout() {

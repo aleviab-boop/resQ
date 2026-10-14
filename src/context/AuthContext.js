@@ -3,6 +3,44 @@ import { createContext, useContext, useState, useEffect } from 'react'
 
 const AuthContext = createContext(null)
 
+const DEMO_DEVICES = [
+  {
+    id: 1001,
+    type: 'Air Conditioner',
+    brand: 'Daikin',
+    model: 'FTKF35TV',
+    purchaseDate: '2024-10-15',
+    warrantyYears: '2',
+    serialNo: 'DK-AC-2024-00193',
+    serviceHistory: [
+      { date: '12 Aug 2026', service: 'Split AC Jet Service', tech: 'Rahul Sharma', cost: '₹599', status: 'Completed' },
+      { date: '3 May 2026', service: 'Split AC Dry Service', tech: 'Vikram Patel', cost: '₹249', status: 'Completed' },
+    ],
+  },
+  {
+    id: 1002,
+    type: 'Washing Machine',
+    brand: 'LG',
+    model: 'FHM1207SDL',
+    purchaseDate: '2023-06-20',
+    warrantyYears: '3',
+    serialNo: 'LG-WM-2023-55821',
+    serviceHistory: [],
+  },
+  {
+    id: 1003,
+    type: 'Refrigerator',
+    brand: 'Samsung',
+    model: 'RT42T5C68S9',
+    purchaseDate: '2022-01-10',
+    warrantyYears: '1',
+    serialNo: 'SAM-RF-2022-11405',
+    serviceHistory: [
+      { date: '8 Jan 2026', service: 'Refrigerator Deep Cleaning', tech: 'Suresh Kumar', cost: '₹349', status: 'Completed' },
+    ],
+  },
+]
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [cart, setCart] = useState([])
@@ -30,6 +68,14 @@ export function AuthProvider({ children }) {
     const u = { name, phone }
     setUser(u)
     try { localStorage.setItem('resq_user', JSON.stringify(u)) } catch {}
+    // Seed demo devices on first login so the demo has pre-populated data
+    try {
+      const existing = localStorage.getItem('resq_devices')
+      if (!existing || JSON.parse(existing).length === 0) {
+        setDevices(DEMO_DEVICES)
+        localStorage.setItem('resq_devices', JSON.stringify(DEMO_DEVICES))
+      }
+    } catch {}
   }
 
   function logout() {

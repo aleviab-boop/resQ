@@ -108,7 +108,7 @@ function applyDiscount(price, couponData) {
 }
 
 export default function BookingFlow({ service, onClose }) {
-  const { user, addBooking } = useAuth()
+  const { user, addBooking, bookings } = useAuth()
   const { t } = useTheme()
   const router = useRouter()
   const [step, setStep] = useState(1)
@@ -120,6 +120,11 @@ export default function BookingFlow({ service, onClose }) {
   const [couponCode, setCouponCode] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState(null)
   const [couponError, setCouponError] = useState('')
+  // Duplicate detection
+  const [duplicateDismissed, setDuplicateDismissed] = useState(false)
+  // Delivery order linking (step 25 = "2.5" between tech selection and confirm)
+  const [deliveryChoice, setDeliveryChoice] = useState(null) // 'yes' | 'no' | null
+  const [deliveryOrderId, setDeliveryOrderId] = useState('')
 
   const dates = getDates()
 
@@ -136,6 +141,12 @@ export default function BookingFlow({ service, onClose }) {
 
   const finalPrice = appliedCoupon ? applyDiscount(service?.price, appliedCoupon) : service?.price
 
+  // Duplicate booking detection
+  const serviceKeyword = service?.name ? service.name.split(' ')[0].toLowerCase() : ''
+  const duplicateBooking = !duplicateDismissed && Array.isArray(bookings)
+    ? bookings.find(b => b.status === 'upcoming' && b.service?.toLowerCase().includes(serviceKeyword))
+    : null
+
   // Step 1: Date & Time
   if (step === 1) return (
     <div className="fixed inset-0 z-[300] bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -147,6 +158,25 @@ export default function BookingFlow({ service, onClose }) {
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl">×</button>
         </div>
+
+        {/* Duplicate booking warning banner */}
+        {duplicateBooking && (
+          <div className="mx-6 mt-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl px-4 py-3 flex items-start gap-3">
+            <span className="text-yellow-500 text-lg flex-shrink-0">⚠️</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-yellow-800 font-semibold">
+                You already have an upcoming booking for {duplicateBooking.service} on {duplicateBooking.date}.
+              </p>
+              <p className="text-xs text-yellow-700 mt-0.5">Still want to book another?</p>
+              <button
+                onClick={() => setDuplicateDismissed(true)}
+                className="mt-2 text-xs font-bold text-yellow-800 bg-yellow-200 hover:bg-yellow-300 px-3 py-1.5 rounded-lg transition"
+              >
+                Continue anyway
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="px-6 pt-4">
           <button
@@ -273,10 +303,114 @@ export default function BookingFlow({ service, onClose }) {
 
         <div className="px-6 pb-6 flex gap-3">
           <button onClick={() => setStep(1)} className="flex-1 py-4 rounded-xl border-2 border-gray-200 font-semibold text-gray-600 hover:border-gray-300 transition">← Back</button>
-          <button disabled={!selectedTech} onClick={() => setStep(3)}
+          <button disabled={!selectedTech} onClick={() => setStep(25)}
             className={`flex-1 py-4 rounded-xl font-bold text-white transition ${
               selectedTech ? 'bg-sky hover:bg-sky/90' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}>{t.continueBtn}</button>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Step 2.5: Delivery order linking
+  if (step === 25) return (
+    <div className="fixed inset-0 z-[300] bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-gray-100">
+          <div>
+            <div className="text-xs text-sky font-semibold uppercase tracking-wide">Step 2.5 of 4</div>
+            <h2 className="font-bold text-gray-900 text-lg">New Delivery?</h2>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl">×</button>
+        </div>
+
+        <div className="px-6 py-6">
+          <p className="text-sm text-gray-600 mb-5">Is this service for a newly delivered appliance? We can link your delivery order for a single-visit installation.</p>
+
+          <div className="space-y-3 mb-6">
+            {/* Yes card */}
+            <button
+              onClick={() => setDeliveryChoice('yes')}
+              className={`w-full text-left p-4 rounded-2xl border-2 transition ${
+                deliveryChoice === 'yes' ? 'border-sky bg-sky/5' : 'border-gray-200 hover:border-sky/40'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📦</span>
+                <div>
+                  <div className="font-bold text-gray-900 text-sm">Yes, link delivery order</div>
+                  <div className="text-xs text-gray-500 mt-0.5">One-visit delivery + installation</div>
+                </div>
+                {deliveryChoice === 'yes' && (
+                  <div className="ml-auto w-6 h-6 rounded-full bg-sky flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </div>
+                )}
+              </div>
+            </button>
+
+            {/* No card */}
+            <button
+              onClick={() => { setDeliveryChoice('no'); setDeliveryOrderId('') }}
+              className={`w-full text-left p-4 rounded-2xl border-2 transition ${
+                deliveryChoice === 'no' ? 'border-sky bg-sky/5' : 'border-gray-200 hover:border-sky/40'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🔧</span>
+                <div>
+                  <div className="font-bold text-gray-900 text-sm">No, skip</div>
+                  <div className="text-xs text-gray-500 mt-0.5">Standard repair / service visit</div>
+                </div>
+                {deliveryChoice === 'no' && (
+                  <div className="ml-auto w-6 h-6 rounded-full bg-sky flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </div>
+                )}
+              </div>
+            </button>
+          </div>
+
+          {/* Delivery order number input — shown only when "Yes" selected */}
+          {deliveryChoice === 'yes' && (
+            <div className="mb-6">
+              <label className="text-sm font-semibold text-gray-700 block mb-2">Delivery order number</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={deliveryOrderId}
+                  onChange={e => setDeliveryOrderId(e.target.value.toUpperCase())}
+                  placeholder="e.g. RD-2026-XXXXXXX"
+                  className="w-full border-2 border-gray-200 focus:border-sky rounded-xl px-4 py-3 text-sm font-mono tracking-wider outline-none transition pr-10"
+                />
+                {deliveryOrderId.trim().length > 0 && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">Find this in your delivery confirmation SMS or app</p>
+            </div>
+          )}
+        </div>
+
+        <div className="px-6 pb-6 flex gap-3">
+          <button onClick={() => setStep(2)} className="flex-1 py-4 rounded-xl border-2 border-gray-200 font-semibold text-gray-600 hover:border-gray-300 transition">← Back</button>
+          <button
+            disabled={!deliveryChoice || (deliveryChoice === 'yes' && !deliveryOrderId.trim())}
+            onClick={() => setStep(3)}
+            className={`flex-1 py-4 rounded-xl font-bold text-white transition ${
+              deliveryChoice && (deliveryChoice === 'no' || deliveryOrderId.trim())
+                ? 'bg-sky hover:bg-sky/90'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }`}
+          >{t.continueBtn}</button>
         </div>
       </div>
     </div>
@@ -344,6 +478,12 @@ export default function BookingFlow({ service, onClose }) {
                 <span className="text-gray-500">Technician</span>
                 <span className="font-semibold text-gray-800">{selectedTech?.name} ⭐ {selectedTech?.rating}</span>
               </div>
+              {deliveryOrderId && (
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Linked delivery</span>
+                  <span className="font-semibold text-green-700">{deliveryOrderId}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -374,7 +514,7 @@ export default function BookingFlow({ service, onClose }) {
         </div>
 
         <div className="px-6 pb-6 flex gap-3">
-          <button onClick={() => setStep(2)} className="flex-1 py-4 rounded-xl border-2 border-gray-200 font-semibold text-gray-600 hover:border-gray-300 transition">← Back</button>
+          <button onClick={() => setStep(25)} className="flex-1 py-4 rounded-xl border-2 border-gray-200 font-semibold text-gray-600 hover:border-gray-300 transition">← Back</button>
           <button onClick={() => {
             addBooking({
               id: bookingId,
@@ -422,6 +562,12 @@ export default function BookingFlow({ service, onClose }) {
               <div className="flex justify-between"><span className="text-gray-500">Date</span><span className="font-semibold">{selectedDate?.date}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Time</span><span className="font-semibold">{selectedSlot}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Technician</span><span className="font-semibold">{selectedTech?.name}</span></div>
+              {deliveryOrderId && (
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Linked delivery</span>
+                  <span className="font-semibold text-green-700">{deliveryOrderId}</span>
+                </div>
+              )}
               {appliedCoupon && (
                 <div className="flex justify-between text-green-600">
                   <span>Amount</span>
@@ -442,7 +588,7 @@ export default function BookingFlow({ service, onClose }) {
             </button>
           </div>
 
-          <div className="px-6 pb-6 flex gap-3">
+          <div className="px-6 pb-4 flex gap-3">
             <button onClick={() => { onClose(); router.push('/my-bookings') }}
               className="flex-1 py-3 rounded-xl border-2 border-gray-200 font-semibold text-gray-700 text-sm hover:border-gray-300 transition">
               My Bookings
@@ -450,6 +596,25 @@ export default function BookingFlow({ service, onClose }) {
             <button onClick={onClose} className="flex-1 py-3 rounded-xl bg-sky text-white font-bold text-sm hover:bg-sky/90 transition">
               Done
             </button>
+          </div>
+
+          {/* WhatsApp tracking card */}
+          <div className="mx-6 mb-6 bg-[#f0faf3] border-2 border-[#25D366]/30 rounded-2xl p-4">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl flex-shrink-0">💬</span>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-gray-900 text-sm mb-0.5">Track on WhatsApp</div>
+                <p className="text-xs text-gray-500 mb-3">We'll send you tech assignment, ETA, and completion updates on WhatsApp</p>
+                <a
+                  href={`https://wa.me/918889001700?text=Hi%2C%20I%27d%20like%20to%20track%20my%20booking%20${bookingId}%20for%20${encodeURIComponent(service?.name || 'my appliance')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20b858] text-white text-xs font-bold px-4 py-2.5 rounded-xl transition"
+                >
+                  📲 Get updates on WhatsApp
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>

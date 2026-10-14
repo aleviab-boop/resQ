@@ -45,9 +45,10 @@ function PhotoCard({ href, img, overlay, children }) {
 
 export default function DashboardWidgets() {
   const { user, bookings, devices } = useAuth()
-  const [timer, setTimer] = useState(getTimeLeft())
+  const [timer, setTimer] = useState(['--', '--', '--'])
 
   useEffect(() => {
+    setTimer(getTimeLeft())
     const iv = setInterval(() => setTimer(getTimeLeft()), 1000)
     return () => clearInterval(iv)
   }, [])
