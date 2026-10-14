@@ -15,11 +15,12 @@ function getTimeLeft() {
   const end = new Date()
   end.setHours(23, 59, 59, 999)
   const diff = end - now
-  if (diff <= 0) return '00:00:00'
-  const h = String(Math.floor(diff / 3600000)).padStart(2, '0')
-  const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0')
-  const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0')
-  return `${h}:${m}:${s}`
+  if (diff <= 0) return ['00', '00', '00']
+  return [
+    String(Math.floor(diff / 3600000)).padStart(2, '0'),
+    String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0'),
+    String(Math.floor((diff % 60000) / 1000)).padStart(2, '0'),
+  ]
 }
 
 function daysLeft(purchaseDate, warrantyYears) {
@@ -45,37 +46,48 @@ export default function DashboardWidgets() {
     return left !== null && left <= 60 && left > 0
   })
 
-  const [h, m, s] = timer.split(':')
-
   return (
     <div className="grid grid-cols-3 gap-3">
 
       {/* Card 1 — Upcoming booking */}
       <Link href={user ? '/my-bookings' : '/login'}
-        className="bg-gradient-to-br from-sky to-navy rounded-2xl p-4 flex flex-col gap-1 hover:opacity-95 transition">
-        <div className="text-xl mb-1">🔧</div>
-        <div className="text-white font-bold text-sm leading-tight line-clamp-2">
-          {user ? nextBooking.service : 'Book a service'}
+        className="rounded-2xl p-4 flex flex-col min-h-[150px] hover:opacity-95 transition"
+        style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #1e40af 100%)' }}>
+        <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
+          🔧
         </div>
-        <div className="text-white/70 text-xs mt-0.5">
-          {user ? nextBooking.date : 'Schedule today'}
+        <div className="mt-3 flex-1">
+          <div className="text-white font-bold text-sm leading-snug line-clamp-2">
+            {user ? nextBooking.service : 'Book a service'}
+          </div>
+          <div className="text-white/65 text-[11px] mt-1 leading-tight">
+            {user ? nextBooking.date : 'Schedule today'}
+          </div>
         </div>
-        <div className="mt-auto pt-3 text-white/80 text-xs font-semibold">
-          {user ? 'Track →' : 'Book →'}
+        <div className="mt-3 flex items-center justify-between">
+          <span className="text-white/80 text-[11px] font-bold tracking-wide uppercase">
+            {user ? 'Track' : 'Book'}
+          </span>
+          <span className="text-white/60 text-sm">→</span>
         </div>
       </Link>
 
       {/* Card 2 — Flash sale */}
       <Link href="/all-services"
-        className="bg-gradient-to-br from-orange-400 to-rose-500 rounded-2xl p-4 flex flex-col gap-1 hover:opacity-95 transition">
-        <div className="text-xl mb-1">⚡</div>
-        <div className="text-white font-bold text-sm leading-tight">Flash Sale</div>
-        <div className="text-white/80 text-xs">Up to 40% off</div>
-        <div className="mt-auto pt-2 flex items-center gap-1">
-          {[h, m, s].map((v, i) => (
+        className="rounded-2xl p-4 flex flex-col min-h-[150px] hover:opacity-95 transition"
+        style={{ background: 'linear-gradient(135deg, #f97316 0%, #e11d48 100%)' }}>
+        <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
+          ⚡
+        </div>
+        <div className="mt-3 flex-1">
+          <div className="text-white font-bold text-sm leading-snug">Flash Sale</div>
+          <div className="text-white/65 text-[11px] mt-1">Up to 40% off today</div>
+        </div>
+        <div className="mt-3 flex items-center gap-1">
+          {timer.map((v, i) => (
             <span key={i} className="flex items-center gap-0.5">
-              <span className="bg-white/20 text-white font-bold text-[11px] px-1.5 py-0.5 rounded tabular-nums">{v}</span>
-              {i < 2 && <span className="text-white/70 text-xs">:</span>}
+              <span className="bg-white/25 text-white font-bold text-xs px-1.5 py-1 rounded-lg tabular-nums leading-none">{v}</span>
+              {i < 2 && <span className="text-white/50 text-[10px] font-bold">:</span>}
             </span>
           ))}
         </div>
@@ -83,26 +95,42 @@ export default function DashboardWidgets() {
 
       {/* Card 3 — Devices / warranty */}
       {user && expiringDevice ? (
-        <Link href="/my-devices"
-          className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl p-4 flex flex-col gap-1 hover:opacity-95 transition">
-          <div className="text-xl mb-1">⚠️</div>
-          <div className="text-white font-bold text-sm leading-tight line-clamp-2">
-            {expiringDevice.brand} {expiringDevice.model}
+        <Link href="/care-plan"
+          className="rounded-2xl p-4 flex flex-col min-h-[150px] hover:opacity-95 transition"
+          style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
+          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
+            ⚠️
           </div>
-          <div className="text-white/80 text-xs">
-            Warranty in {daysLeft(expiringDevice.purchaseDate, expiringDevice.warrantyYears)}d
+          <div className="mt-3 flex-1">
+            <div className="text-white font-bold text-sm leading-snug line-clamp-2">
+              {expiringDevice.brand} {expiringDevice.model}
+            </div>
+            <div className="text-white/65 text-[11px] mt-1 leading-tight">
+              Warranty expires in {daysLeft(expiringDevice.purchaseDate, expiringDevice.warrantyYears)} days
+            </div>
           </div>
-          <div className="mt-auto pt-3 text-white/80 text-xs font-semibold">Protect →</div>
+          <div className="mt-3 flex items-center justify-between">
+            <span className="text-white/80 text-[11px] font-bold tracking-wide uppercase">Protect</span>
+            <span className="text-white/60 text-sm">→</span>
+          </div>
         </Link>
       ) : (
         <Link href={user ? '/my-devices' : '/login'}
-          className="bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl p-4 flex flex-col gap-1 hover:opacity-95 transition">
-          <div className="text-xl mb-1">📱</div>
-          <div className="text-white font-bold text-sm leading-tight">My Devices</div>
-          <div className="text-white/70 text-xs">
-            {user && devices?.length > 0 ? `${devices.length} registered` : 'Track warranty'}
+          className="rounded-2xl p-4 flex flex-col min-h-[150px] hover:opacity-95 transition"
+          style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)' }}>
+          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
+            🏠
           </div>
-          <div className="mt-auto pt-3 text-white/80 text-xs font-semibold">Manage →</div>
+          <div className="mt-3 flex-1">
+            <div className="text-white font-bold text-sm leading-snug">My Devices</div>
+            <div className="text-white/65 text-[11px] mt-1 leading-tight">
+              {user && devices?.length > 0 ? `${devices.length} appliance${devices.length !== 1 ? 's' : ''} registered` : 'Track your appliances'}
+            </div>
+          </div>
+          <div className="mt-3 flex items-center justify-between">
+            <span className="text-white/80 text-[11px] font-bold tracking-wide uppercase">Manage</span>
+            <span className="text-white/60 text-sm">→</span>
+          </div>
         </Link>
       )}
     </div>
