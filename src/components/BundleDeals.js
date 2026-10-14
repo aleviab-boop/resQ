@@ -44,10 +44,10 @@ export default function BundleDeals() {
         <h2 className="text-base font-extrabold text-gray-900">Bundle Deals 🎁</h2>
         <Link href="/all-services" className="text-xs text-sky font-semibold">See all</Link>
       </div>
-      <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {BUNDLES.map(b => (
           <Link key={b.id} href={b.href}
-            className="flex-shrink-0 w-60 bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-lg transition">
+            className="bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-lg transition">
             <div className="bg-gradient-to-br from-navy/5 to-sky/10 px-4 pt-4 pb-2">
               <div className="flex items-center gap-1 mb-2">
                 {b.icons.map((icon, i) => (
