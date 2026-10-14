@@ -12,6 +12,7 @@ export default function Navbar() {
   const { dark, toggleDark, lang, toggleLang, t } = useTheme()
   const router = useRouter()
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [express, setExpress] = useState(false)
   const dropRef = useRef(null)
 
   useEffect(() => {
@@ -73,6 +74,19 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           {user && (
             <>
+              {/* Express 45-min toggle */}
+              <button
+                onClick={() => setExpress(v => !v)}
+                title={express ? 'Express mode ON — 45 min service' : 'Enable 45-min express service'}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                  express
+                    ? 'bg-amber-400 text-amber-900 shadow-lg shadow-amber-400/40'
+                    : 'bg-white/15 text-white hover:bg-white/25'
+                }`}>
+                <span>{express ? '⚡' : '🕐'}</span>
+                <span className="hidden sm:inline">45m</span>
+              </button>
+
               {/* Notifications */}
               <Link href="/Notifications" className="relative text-white hover:text-white/80 transition">
                 <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
