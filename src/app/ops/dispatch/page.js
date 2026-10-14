@@ -485,7 +485,7 @@ export default function DispatchPage() {
         </section>
 
         {/* ── SECTION 5: Promise Engine — Slot Availability ── */}
-        <section>
+        <section id="promise-engine">
           <div className="flex items-center gap-3 mb-4">
             <h2 className="text-lg font-bold text-gray-800">Promise Engine — Slot Availability</h2>
             <span className="text-xs bg-sky-100 text-sky-700 border border-sky-200 px-2 py-0.5 rounded-full font-medium">Simulation</span>

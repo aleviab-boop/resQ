@@ -130,10 +130,18 @@ export default function OpsHub() {
       {/* MODULE B — Service Delivery */}
       <ModuleSection label="B — Service Delivery" badge="Field ops">
         <ModuleCard
+          href="/ops/dispatch#promise-engine"
+          icon="🗓️"
+          title="Promise Engine"
+          desc="Pincode-level slot availability — skills, capacity, parts check"
+          stat="Check available windows by pincode"
+          accent="from-sky-500 to-cyan-600"
+        />
+        <ModuleCard
           href="/ops/dispatch"
           icon="📍"
           title="Dispatch Console"
-          desc="Live technician map, job assignment and slot management"
+          desc="Technician status board, job assignment and schedule"
           stat="4 available · 3 on job today"
           accent="from-amber-500 to-orange-600"
         />
