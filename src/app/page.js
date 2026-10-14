@@ -23,10 +23,8 @@ export default function Dashboard() {
 
         {/* Greeting */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 leading-tight">
-            {t.hello}<br />{t.welcome}
-          </h1>
-          <p className="text-gray-500 text-sm mt-2">{t.tagline}</p>
+          <p className="text-gray-500 text-sm">{t.hello}</p>
+          <h1 className="text-xl font-bold text-gray-900 mt-0.5">{t.welcome}</h1>
         </div>
 
         {/* Dashboard Widgets — active booking + warranty nudge */}
