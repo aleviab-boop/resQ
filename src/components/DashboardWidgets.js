@@ -21,38 +21,31 @@ export default function DashboardWidgets() {
   const nextBooking = bookings?.find(b => b.status === 'upcoming') || MOCK_UPCOMING
 
   return (
-    <div className="space-y-2">
-      {/* Upcoming booking — slim horizontal card */}
+    <div className="grid grid-cols-2 gap-3">
+      {/* Upcoming booking card */}
       <Link href="/my-bookings"
-        className="flex items-center gap-3 bg-gradient-to-r from-navy to-sky rounded-xl px-4 py-3 hover:opacity-95 transition">
-        <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0 text-lg">🔧</div>
-        <div className="flex-1 min-w-0">
-          <div className="text-white font-bold text-sm leading-tight truncate">{nextBooking.service}</div>
-          <div className="text-white/70 text-xs mt-0.5 truncate">{nextBooking.date} · {nextBooking.time}</div>
-        </div>
-        <div className="text-white/80 text-xs font-semibold flex-shrink-0 flex items-center gap-1">
-          Track
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/>
-          </svg>
+        className="bg-white rounded-2xl shadow-card p-4 hover:shadow-lg transition flex flex-col gap-1.5">
+        <div className="text-2xl">🔧</div>
+        <div className="text-sm font-bold text-gray-800 leading-tight">{nextBooking.service}</div>
+        <div className="text-xs text-gray-400">{nextBooking.date}</div>
+        <div className="mt-auto pt-2">
+          <span className="text-xs font-semibold text-sky">Track →</span>
         </div>
       </Link>
 
-      {/* Warranty expiring — slim alert strip */}
+      {/* Warranty expiring card */}
       {WARRANTY_EXPIRING.map(w => (
-        <div key={w.name} className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5">
-          <span className="text-lg flex-shrink-0">⚠️</span>
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-bold text-amber-800 truncate">{w.name}</div>
-            <div className="text-[11px] text-amber-600 mt-0.5">Warranty expires in {w.daysLeft} days</div>
-          </div>
-          <div className="flex gap-2 flex-shrink-0">
+        <div key={w.name} className="bg-white rounded-2xl shadow-card p-4 flex flex-col gap-1.5">
+          <div className="text-2xl">⚠️</div>
+          <div className="text-sm font-bold text-gray-800 leading-tight">{w.name}</div>
+          <div className="text-xs text-gray-400">Expires in {w.daysLeft} days</div>
+          <div className="flex gap-2 mt-auto pt-2">
             <Link href={`/services/${w.serviceSlug}`}
-              className="bg-sky text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-sky/90 transition">
+              className="flex-1 bg-sky text-white text-xs font-bold py-1.5 rounded-lg text-center hover:bg-sky/90 transition">
               Book
             </Link>
             <Link href="/care-plan"
-              className="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-amber-600 transition">
+              className="flex-1 bg-amber-500 text-white text-xs font-bold py-1.5 rounded-lg text-center hover:bg-amber-600 transition">
               Protect
             </Link>
           </div>
