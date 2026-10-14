@@ -6,7 +6,6 @@ import ServiceCard from '@/components/ServiceCard'
 import VideoCard from '@/components/VideoCard'
 import BundleDeals from '@/components/BundleDeals'
 import DashboardWidgets from '@/components/DashboardWidgets'
-import FlashSaleBanner from '@/components/FlashSaleBanner'
 import Link from 'next/link'
 import { mainAppliances, maintenanceServices, installationServices, testimonialVideos } from '@/lib/data'
 import { useTheme } from '@/context/ThemeContext'
@@ -23,16 +22,12 @@ export default function Dashboard() {
 
         {/* Greeting */}
         <div>
-          <h1 className="text-lg font-bold text-gray-900">{t.hello}, {t.welcome}</h1>
+          <h1 className="text-lg font-bold text-gray-900">{t.hello} {t.welcome}</h1>
           <p className="text-gray-400 text-xs mt-0.5">{t.tagline}</p>
         </div>
 
         {/* Dashboard Widgets — active booking + warranty nudge */}
         <DashboardWidgets />
-
-        {/* Offer Carousel */}
-        {/* Flash sale countdown */}
-        <FlashSaleBanner />
 
         <OfferCarousel />
 
