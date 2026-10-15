@@ -4,9 +4,10 @@ import Link from 'next/link'
 import {
   CASES, JOBS, CONVERSATIONS,
   getCustomer, getTechnician,
-  CHANNEL_ICONS,
 } from '@/lib/platformData'
+import OpsShell, { StatCard, SectionLabel } from '@/components/OpsShell'
 
+// ── Step definitions ─────────────────────────────────────────────────────────
 const STEPS = [
   { num: 1, name: 'Request received',      desc: 'Case created, customer contacted' },
   { num: 2, name: 'Centre assigned',       desc: 'Service centre selected, SLA started' },
@@ -16,8 +17,31 @@ const STEPS = [
   { num: 6, name: 'Completion + feedback', desc: 'Visit done, NPS collected' },
 ]
 
+// Top-border color per stage (inline style, avoids Tailwind purging)
+const STEP_TOP_COLORS = ['#0ea5e9', '#3b82f6', '#8b5cf6', '#f59e0b', '#f97316', '#22c55e']
+// Text accent color per stage
+const STEP_TEXT_COLORS = ['text-sky-600', 'text-blue-600', 'text-violet-600', 'text-amber-600', 'text-orange-600', 'text-green-600']
+
 const TYPE_FILTERS = ['All', 'Repair', 'Installation', 'Service', 'Recovery']
 
+const TYPE_BADGE = {
+  installation: 'bg-purple-50 text-purple-700 border-purple-200',
+  repair:       'bg-orange-50 text-orange-700 border-orange-200',
+  service:      'bg-blue-50 text-blue-700 border-blue-200',
+  maintenance:  'bg-teal-50 text-teal-700 border-teal-200',
+  recovery:     'bg-pink-50 text-pink-700 border-pink-200',
+}
+
+// Activity event type badges
+const EVENT_BADGES = {
+  done:   { label: 'Done',   cls: 'bg-green-100 text-green-700' },
+  parts:  { label: 'Parts',  cls: 'bg-amber-100 text-amber-700' },
+  new:    { label: 'New',    cls: 'bg-sky-100 text-sky-700' },
+  update: { label: 'Update', cls: 'bg-gray-100 text-gray-600' },
+  active: { label: 'Active', cls: 'bg-orange-100 text-orange-700' },
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
 function deriveStep(kase, jobs, conv) {
   if (kase.status === 'resolved' || kase.status === 'completed') return 6
   if (jobs.some(j => j.status === 'in-progress')) return 5
@@ -28,15 +52,15 @@ function deriveStep(kase, jobs, conv) {
 }
 
 function getSlaInfo(kase) {
-  if (kase.slaBreached) return { label: '⚠️ Breached', cls: 'text-red-600 bg-red-50 border-red-200' }
+  if (kase.slaBreached) return { label: 'Breached', cls: 'text-red-600 bg-red-50 border-red-200' }
   if (!kase.slaDeadline) return null
   const diff = new Date(kase.slaDeadline) - new Date()
-  if (diff <= 0) return { label: '⚠️ Breached', cls: 'text-red-600 bg-red-50 border-red-200' }
+  if (diff <= 0) return { label: 'Breached', cls: 'text-red-600 bg-red-50 border-red-200' }
   const h = Math.floor(diff / 3600000)
   const m = Math.floor((diff % 3600000) / 60000)
   if (h < 4)  return { label: `${h}h ${m}m left`, cls: 'text-red-600 bg-red-50 border-red-200' }
-  if (h < 24) return { label: `${h}h left`,       cls: 'text-amber-600 bg-amber-50 border-amber-200' }
-  return        { label: `${h}h left`,             cls: 'text-green-600 bg-green-50 border-green-200' }
+  if (h < 24) return { label: `${h}h left`,        cls: 'text-amber-600 bg-amber-50 border-amber-200' }
+  return        { label: `${h}h left`,              cls: 'text-green-600 bg-green-50 border-green-200' }
 }
 
 function relTime(dateStr) {
@@ -52,28 +76,21 @@ function relTime(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
 }
 
-const TYPE_BADGE = {
-  installation: 'bg-purple-50 text-purple-700 border-purple-200',
-  repair:       'bg-orange-50 text-orange-700 border-orange-200',
-  service:      'bg-blue-50 text-blue-700 border-blue-200',
-  maintenance:  'bg-teal-50 text-teal-700 border-teal-200',
-  recovery:     'bg-pink-50 text-pink-700 border-pink-200',
-}
-
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default function JourneyConsolePage() {
-  const [typeFilter, setTypeFilter]   = useState('All')
+  const [typeFilter, setTypeFilter]     = useState('All')
   const [stepOverrides, setStepOverrides] = useState({})
 
   // Build enriched case data with computed step
   const caseStepData = useMemo(() => {
     return CASES.map(kase => {
-      const jobs = JOBS.filter(j => j.caseId === kase.id)
-      const conv = CONVERSATIONS.find(c => c.caseId === kase.id)
+      const jobs  = JOBS.filter(j => j.caseId === kase.id)
+      const conv  = CONVERSATIONS.find(c => c.caseId === kase.id)
       const derived = deriveStep(kase, jobs, conv)
-      const step = stepOverrides[kase.id] ?? derived
-      const tech = getTechnician(kase.assignedTo)
-      const cust = getCustomer(kase.customerId)
-      const sla  = getSlaInfo(kase)
+      const step  = stepOverrides[kase.id] ?? derived
+      const tech  = getTechnician(kase.assignedTo)
+      const cust  = getCustomer(kase.customerId)
+      const sla   = getSlaInfo(kase)
       return { kase, step, tech, cust, sla }
     })
   }, [stepOverrides])
@@ -93,43 +110,50 @@ export default function JourneyConsolePage() {
     return c
   }, [filteredCaseData])
 
-  // Activity feed — derive from real CASES + JOBS data, sorted by most recent
+  // Unfiltered counts for stat cards
+  const allStepCounts = useMemo(() => {
+    const c = {}
+    caseStepData.forEach(({ step }) => { c[step] = (c[step] || 0) + 1 })
+    return c
+  }, [caseStepData])
+
+  // Activity feed derived from CASES + JOBS
   const activityFeed = useMemo(() => {
     const events = []
 
     CASES.forEach(c => {
       const cust = getCustomer(c.customerId)
-      let icon = '📬'
+      let type = 'update'
       let text = ''
       if (c.status === 'resolved' || c.status === 'completed') {
-        icon = '✅'
+        type = 'done'
         text = `${c.id} ${c.status} — ${cust?.name}: ${c.title.slice(0, 48)}`
       } else if (c.status === 'parts-awaited') {
-        icon = '📦'
+        type = 'parts'
         text = `${c.id} parts awaited — Part ordered for ${cust?.name}`
       } else if (c.status === 'open') {
-        icon = '📬'
+        type = 'new'
         text = `${c.id} opened — ${cust?.name} contacted via ${c.channel}`
       } else {
-        icon = '🔧'
+        type = 'update'
         text = `${c.id} ${c.status.replace(/-/g, ' ')} — ${cust?.name}`
       }
-      events.push({ icon, text, time: c.updatedAt || c.createdAt, id: 'case-' + c.id })
+      events.push({ type, text, time: c.updatedAt || c.createdAt, id: 'case-' + c.id })
     })
 
     JOBS.forEach(j => {
-      const tech = getTechnician(j.technicianId)
+      const tech  = getTechnician(j.technicianId)
       const visit = j.visits?.[0]
       if (j.status === 'in-progress' && visit) {
         events.push({
-          icon: '🔧',
+          type: 'active',
           text: `${j.id} started — ${tech?.name} arrived at ${j.city} ${visit.arrivedAt}`,
           time: j.scheduledDate + 'T' + visit.arrivedAt + ':00',
           id:   'job-prog-' + j.id,
         })
       } else if (j.status === 'completed' && visit) {
         events.push({
-          icon: '✅',
+          type: 'done',
           text: `${j.id} completed — ${tech?.name}: ${(visit.diagnosis || 'visit done').slice(0, 50)}`,
           time: j.scheduledDate + 'T13:00:00',
           id:   'job-done-' + j.id,
@@ -137,7 +161,6 @@ export default function JourneyConsolePage() {
       }
     })
 
-    // Deduplicate, sort newest first, take 10
     const seen = new Set()
     return events
       .filter(e => { if (seen.has(e.id)) return false; seen.add(e.id); return true })
@@ -150,43 +173,29 @@ export default function JourneyConsolePage() {
     setStepOverrides(prev => ({ ...prev, [caseId]: currentStep + 1 }))
   }
 
-  const today = new Date().toLocaleDateString('en-IN', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
+  const incomingCount  = (allStepCounts[1] || 0) + (allStepCounts[2] || 0)
+  const activeCount    = (allStepCounts[3] || 0) + (allStepCounts[4] || 0) + (allStepCounts[5] || 0)
+  const completedCount = allStepCounts[6] || 0
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <OpsShell
+      title="Service Journey"
+      subtitle="End-to-end case pipeline — 6 stages"
+      breadcrumb={[{ label: 'Journey' }]}
+      noPad
+    >
 
-      {/* ── PAGE HEADER ─────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
-        <div className="flex items-start justify-between gap-6 mb-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
-              <Link href="/ops" className="hover:text-[#00a1e1] transition">Ops Hub</Link>
-              <span>›</span>
-              <span className="text-gray-700 font-semibold">Service Journey Console</span>
-            </div>
-            <h1 className="text-xl font-extrabold text-gray-900">Service Journey Console</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Active service jobs — {today}</p>
-          </div>
-
-          {/* Summary bar: case count per step */}
-          <div className="flex items-center gap-2 flex-wrap justify-end">
-            {STEPS.map(s => (
-              <div key={s.num} className="flex flex-col items-center bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 min-w-[56px] text-center">
-                <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">S{s.num}</span>
-                <span className={`text-xl font-extrabold leading-tight ${
-                  (stepCounts[s.num] || 0) > 0 ? 'text-[#00a1e1]' : 'text-gray-200'
-                }`}>
-                  {stepCounts[s.num] || 0}
-                </span>
-              </div>
-            ))}
-          </div>
+      {/* ── Stat row + filter chips (padded section) ─────────────────────── */}
+      <div className="max-w-7xl mx-auto w-full px-5 sm:px-6 pt-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+          <StatCard label="Total Cases"  value={caseStepData.length} sub="all active" />
+          <StatCard label="Incoming"     value={incomingCount}       sub="steps 1–2" color="text-sky-600" />
+          <StatCard label="In Service"   value={activeCount}         sub="steps 3–5" color="text-orange-500" />
+          <StatCard label="Completed"    value={completedCount}      sub="step 6"    color="text-green-600" />
         </div>
 
-        {/* Type filter chips */}
-        <div className="flex gap-2">
+        {/* Filter chips */}
+        <div className="flex items-center gap-2 flex-wrap mb-4">
           {TYPE_FILTERS.map(f => (
             <button
               key={f}
@@ -194,122 +203,128 @@ export default function JourneyConsolePage() {
               className={`text-xs font-semibold px-3.5 py-1.5 rounded-full transition ${
                 typeFilter === f
                   ? 'bg-[#13347b] text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
               }`}
             >
               {f}
             </button>
           ))}
           <span className="ml-2 text-xs text-gray-400 self-center">
-            {filteredCaseData.length} case{filteredCaseData.length !== 1 ? 's' : ''} shown
+            {filteredCaseData.length} case{filteredCaseData.length !== 1 ? 's' : ''}
           </span>
         </div>
       </div>
 
-      {/* ── PIPELINE (Kanban columns) ────────────────────────────────────── */}
-      <div className="px-4 py-5 overflow-x-auto">
+      {/* ── Kanban (full-width horizontal scroll) ────────────────────────── */}
+      <div className="px-4 pb-6 overflow-x-auto">
         <div className="flex gap-3" style={{ minWidth: 'max-content' }}>
-          {STEPS.map(s => {
+          {STEPS.map((s, si) => {
             const casesInStep = filteredCaseData.filter(d => d.step === s.num)
-            const isComplete  = s.num === 6
+            const topColor    = STEP_TOP_COLORS[si]
+            const textColor   = STEP_TEXT_COLORS[si]
 
             return (
               <div key={s.num} className="flex flex-col flex-shrink-0" style={{ width: 256 }}>
-
-                {/* Column header */}
+                {/* Column card */}
                 <div
-                  className={`rounded-t-xl px-4 py-3 ${
-                    isComplete ? 'bg-green-600' : 'bg-[#00a1e1]'
-                  }`}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col"
+                  style={{ borderTop: `3px solid ${topColor}` }}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Step {s.num}</div>
-                      <div className="text-sm font-bold text-white leading-tight mt-0.5">{s.name}</div>
-                    </div>
-                    <span className={`text-sm font-extrabold w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center ${
-                      isComplete ? 'bg-green-100 text-green-700' : 'bg-white/20 text-white'
-                    }`}>
-                      {casesInStep.length}
-                    </span>
-                  </div>
-                  <div className="text-[10px] text-white/50 mt-1 leading-tight">{s.desc}</div>
-                </div>
-
-                {/* Case cards */}
-                <div
-                  className={`flex-1 rounded-b-xl border border-t-0 p-2 space-y-2 overflow-y-auto ${
-                    isComplete
-                      ? 'bg-green-50/40 border-green-200'
-                      : 'bg-sky-50/30 border-sky-200'
-                  }`}
-                  style={{ minHeight: 320 }}
-                >
-                  {casesInStep.length === 0 ? (
-                    <div className="flex items-center justify-center py-10 text-gray-300 text-xs font-medium">
-                      No cases
-                    </div>
-                  ) : (
-                    casesInStep.map(({ kase, tech, cust, sla, step }) => (
-                      <div
-                        key={kase.id}
-                        className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow"
-                      >
-                        {/* Row 1: case ID + type badge + priority dot + channel */}
-                        <div className="flex items-center gap-1.5 mb-1.5">
-                          <span className="font-mono text-[11px] font-bold text-gray-500">{kase.id}</span>
-                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                            kase.priority === 'high'   ? 'bg-red-500' :
-                            kase.priority === 'medium' ? 'bg-amber-400' : 'bg-gray-300'
-                          }`} title={`${kase.priority} priority`} />
-                          <span className="text-sm flex-shrink-0" title={kase.channel}>{CHANNEL_ICONS[kase.channel]}</span>
-                          <span className={`ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded border flex-shrink-0 ${
-                            TYPE_BADGE[kase.type] || 'bg-gray-100 text-gray-600 border-gray-200'
-                          }`}>
-                            {kase.type}
-                          </span>
-                        </div>
-
-                        {/* Customer name */}
-                        <div className="text-[12px] font-bold text-gray-900 leading-tight">{cust?.name}</div>
-
-                        {/* Case title */}
-                        <div className="text-[11px] text-gray-500 mt-0.5 leading-snug line-clamp-1 truncate">
-                          {kase.title}
-                        </div>
-
-                        {/* SLA + Technician */}
-                        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                          {sla && (
-                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border leading-tight ${sla.cls}`}>
-                              {sla.label}
-                            </span>
-                          )}
-                          {tech && (
-                            <span className="text-[10px] text-gray-400 truncate">{tech.name}</span>
-                          )}
-                        </div>
-
-                        {/* Action row */}
-                        <div className="flex items-center justify-between mt-2.5 gap-1">
-                          <Link
-                            href={`/ops/cases/${kase.id}`}
-                            className="text-[10px] font-semibold text-[#00a1e1] hover:underline"
-                          >
-                            Open case →
-                          </Link>
-                          {step < 6 && (
-                            <button
-                              onClick={() => advanceStep(kase.id, step)}
-                              className="text-[10px] font-bold bg-[#00a1e1] hover:bg-sky-500 text-white px-2 py-1 rounded-lg transition flex-shrink-0"
-                            >
-                              → Step {step + 1}
-                            </button>
-                          )}
-                        </div>
+                  {/* Column header */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Step {s.num}</div>
+                        <div className={`text-sm font-bold leading-tight mt-0.5 ${textColor}`}>{s.name}</div>
+                        <div className="text-[10px] text-gray-400 mt-0.5 leading-tight">{s.desc}</div>
                       </div>
-                    ))
-                  )}
+                      <span
+                        className={`text-sm font-extrabold w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center ${
+                          casesInStep.length > 0 ? 'text-white' : 'bg-gray-100 text-gray-300'
+                        }`}
+                        style={casesInStep.length > 0 ? { background: topColor } : {}}
+                      >
+                        {casesInStep.length}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Case cards */}
+                  <div className="p-2 space-y-2 flex-1" style={{ minHeight: 320 }}>
+                    {casesInStep.length === 0 ? (
+                      <div className="flex items-center justify-center py-10 text-gray-300 text-xs font-medium">
+                        No cases
+                      </div>
+                    ) : (
+                      casesInStep.map(({ kase, tech, cust, sla, step }) => (
+                        <div
+                          key={kase.id}
+                          className="bg-gray-50 border border-gray-100 rounded-xl p-3 hover:border-gray-200 hover:shadow-sm transition-all"
+                        >
+                          {/* Row 1: case ID + type badge + priority dot + channel */}
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <span className="font-mono text-[11px] font-bold text-gray-500">{kase.id}</span>
+                            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                              kase.priority === 'high'   ? 'bg-red-500' :
+                              kase.priority === 'medium' ? 'bg-amber-400' : 'bg-gray-300'
+                            }`} title={`${kase.priority} priority`} />
+                            <span className={`ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded border flex-shrink-0 ${
+                              TYPE_BADGE[kase.type] || 'bg-gray-100 text-gray-600 border-gray-200'
+                            }`}>
+                              {kase.type}
+                            </span>
+                          </div>
+
+                          {/* Customer name */}
+                          <div className="text-[12px] font-bold text-gray-900 leading-tight">{cust?.name}</div>
+
+                          {/* Case title */}
+                          <div className="text-[11px] text-gray-500 mt-0.5 leading-snug truncate">
+                            {kase.title}
+                          </div>
+
+                          {/* Channel badge */}
+                          <div className="mt-1">
+                            <span className="text-[10px] font-medium bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded border border-gray-200">
+                              {kase.channel}
+                            </span>
+                          </div>
+
+                          {/* SLA + Technician */}
+                          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                            {sla && (
+                              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border leading-tight ${sla.cls}`}>
+                                {sla.label}
+                              </span>
+                            )}
+                            {tech && (
+                              <span className="text-[10px] text-gray-400 truncate">{tech.name}</span>
+                            )}
+                          </div>
+
+                          {/* Action row */}
+                          <div className="flex items-center justify-between mt-2.5 gap-1">
+                            <Link
+                              href={`/ops/cases/${kase.id}`}
+                              className="text-[10px] font-semibold hover:underline"
+                              style={{ color: '#00a1e1' }}
+                            >
+                              Open case
+                            </Link>
+                            {step < 6 && (
+                              <button
+                                onClick={() => advanceStep(kase.id, step)}
+                                className="text-[10px] font-bold text-white px-2 py-1 rounded-lg transition flex-shrink-0 hover:opacity-90"
+                                style={{ background: topColor }}
+                              >
+                                Step {step + 1}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               </div>
             )
@@ -317,29 +332,35 @@ export default function JourneyConsolePage() {
         </div>
       </div>
 
-      {/* ── LIVE ACTIVITY FEED ──────────────────────────────────────────── */}
-      <div className="px-6 pb-10">
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="font-bold text-gray-900 text-sm">Recent activity</h2>
-            <span className="text-[10px] text-gray-400 italic bg-gray-100 px-2.5 py-1 rounded-full">
-              Simulated real-time feed
+      {/* ── Activity feed ────────────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto w-full px-5 sm:px-6 pb-10">
+        <SectionLabel>Recent Activity</SectionLabel>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+            <span className="text-sm font-bold text-gray-800">Live activity feed</span>
+            <span className="text-[10px] text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">
+              Simulated real-time
             </span>
           </div>
           <div className="divide-y divide-gray-50">
-            {activityFeed.map((ev, i) => (
-              <div key={ev.id || i} className="flex items-start gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
-                <span className="text-base flex-shrink-0 mt-0.5">{ev.icon}</span>
-                <span className="text-[12px] text-gray-700 flex-1 leading-snug">{ev.text}</span>
-                <span className="text-[10px] text-gray-400 flex-shrink-0 mt-0.5 whitespace-nowrap">
-                  {relTime(ev.time)}
-                </span>
-              </div>
-            ))}
+            {activityFeed.map((ev, i) => {
+              const badge = EVENT_BADGES[ev.type] || EVENT_BADGES.update
+              return (
+                <div key={ev.id || i} className="flex items-start gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 mt-0.5 ${badge.cls}`}>
+                    {badge.label}
+                  </span>
+                  <span className="text-[12px] text-gray-700 flex-1 leading-snug">{ev.text}</span>
+                  <span className="text-[10px] text-gray-400 flex-shrink-0 mt-0.5 whitespace-nowrap">
+                    {relTime(ev.time)}
+                  </span>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>
 
-    </div>
+    </OpsShell>
   )
 }

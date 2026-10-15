@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { SURVEYS, CASES, CUSTOMERS } from '@/lib/platformData'
+import OpsShell, { StatCard, SectionLabel } from '@/components/OpsShell'
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 function npsColor(score) {
@@ -38,16 +39,16 @@ function calcAvgScore(responses) {
   return (valid.reduce((s, r) => s + r.answers.q1, 0) / valid.length).toFixed(1)
 }
 
-const TRIGGER_OPTIONS = ['case-resolved', 'order-completed', 'weekly-feedback']
-const QUESTION_TYPES  = ['NPS', 'Scale 1-5', 'Text', 'Yes-No']
-const RECOVERY_ACTIONS = ['Create case', 'Send WhatsApp', 'Assign to senior']
+const TRIGGER_OPTIONS   = ['case-resolved', 'order-completed', 'weekly-feedback']
+const QUESTION_TYPES    = ['NPS', 'Scale 1-5', 'Text', 'Yes-No']
+const RECOVERY_ACTIONS  = ['Create case', 'Send WhatsApp', 'Assign to senior']
 
 function newQuestion() {
   return { id: Date.now(), type: 'NPS', text: '' }
 }
 
-// ── CUSTOMER NPS TAB ─────────────────────────────────────────────────────────
-function CustomerNPSTab() {
+// ── NPS Analytics tab ────────────────────────────────────────────────────────
+function NPSAnalyticsTab() {
   const svcResponses   = SURVEYS[0].responses
   const storeResponses = SURVEYS[1].responses
 
@@ -55,12 +56,12 @@ function CustomerNPSTab() {
   const storeNPSScore   = storeResponses.length > 0 ? calcNPS(storeResponses) : null
 
   const customerRows = [
-    { id: 'C001', name: 'Priya Mehta',  serviceNPS: 9,    serviceCaseId: 'CS007', storeNPS: null, serviceDate: '12 Aug 2026', recoveryCase: null },
-    { id: 'C006', name: 'Deepak Joshi', serviceNPS: 3,    serviceCaseId: 'CS005', storeNPS: null, serviceDate: '9 Oct 2026',  recoveryCase: 'CS006' },
-    { id: 'C002', name: 'Ramesh Iyer',  serviceNPS: null, serviceCaseId: null,    storeNPS: null, serviceDate: null,          recoveryCase: null },
-    { id: 'C003', name: 'Anita Sharma', serviceNPS: null, serviceCaseId: null,    storeNPS: null, serviceDate: null,          recoveryCase: null },
-    { id: 'C004', name: 'Vikram Nair',  serviceNPS: null, serviceCaseId: null,    storeNPS: null, serviceDate: null,          recoveryCase: null },
-    { id: 'C005', name: 'Sunita Patel', serviceNPS: null, serviceCaseId: null,    storeNPS: null, serviceDate: null,          recoveryCase: null },
+    { id: 'C001', name: 'Priya Mehta',  serviceNPS: 9,    serviceCaseId: 'CS007', serviceDate: '12 Aug 2026', recoveryCase: null },
+    { id: 'C006', name: 'Deepak Joshi', serviceNPS: 3,    serviceCaseId: 'CS005', serviceDate: '9 Oct 2026',  recoveryCase: 'CS006' },
+    { id: 'C002', name: 'Ramesh Iyer',  serviceNPS: null, serviceCaseId: null,    serviceDate: null,          recoveryCase: null },
+    { id: 'C003', name: 'Anita Sharma', serviceNPS: null, serviceCaseId: null,    serviceDate: null,          recoveryCase: null },
+    { id: 'C004', name: 'Vikram Nair',  serviceNPS: null, serviceCaseId: null,    serviceDate: null,          recoveryCase: null },
+    { id: 'C005', name: 'Sunita Patel', serviceNPS: null, serviceCaseId: null,    serviceDate: null,          recoveryCase: null },
   ]
 
   const promoters  = customerRows.filter(c => c.serviceNPS !== null && c.serviceNPS >= 9)
@@ -72,39 +73,37 @@ function CustomerNPSTab() {
   const chartMax    = 50
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
 
-      {/* Section 1 — NPS comparison header */}
-      <div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Service NPS</div>
-            <div className={`text-6xl font-extrabold mb-2 ${serviceNPSScore >= 50 ? 'text-green-600' : serviceNPSScore >= 0 ? 'text-amber-500' : 'text-red-600'}`}>
-              {serviceNPSScore}
-            </div>
-            <div className="text-sm text-gray-400">Post-service feedback · {svcResponses.length} responses</div>
+      {/* NPS score tiles */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Service NPS</div>
+          <div className={`text-6xl font-extrabold mb-2 ${serviceNPSScore >= 50 ? 'text-green-600' : serviceNPSScore >= 0 ? 'text-amber-500' : 'text-red-600'}`}>
+            {serviceNPSScore}
           </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Store NPS</div>
-            {storeNPSScore === null ? (
-              <div className="text-xl font-bold text-gray-400 mb-2">No NPS data — {storeResponses.length} responses needed</div>
-            ) : (
-              <div className={`text-6xl font-extrabold mb-2 ${storeNPSScore >= 50 ? 'text-green-600' : storeNPSScore >= 0 ? 'text-amber-500' : 'text-red-600'}`}>
-                {storeNPSScore}
-              </div>
-            )}
-            <div className="text-sm text-gray-400">Store purchase feedback · {storeResponses.length} responses</div>
-          </div>
+          <div className="text-sm text-gray-400">Post-service feedback · {svcResponses.length} responses</div>
         </div>
-        <div className="text-xs text-center text-gray-400 bg-white rounded-lg py-2.5 px-4 border border-gray-100">
-          NPS = % Promoters (9–10) minus % Detractors (0–6). Industry benchmark: +40 is good.
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Store NPS</div>
+          {storeNPSScore === null ? (
+            <div className="text-xl font-bold text-gray-400 mb-2">No NPS data — {storeResponses.length} responses needed</div>
+          ) : (
+            <div className={`text-6xl font-extrabold mb-2 ${storeNPSScore >= 50 ? 'text-green-600' : storeNPSScore >= 0 ? 'text-amber-500' : 'text-red-600'}`}>
+              {storeNPSScore}
+            </div>
+          )}
+          <div className="text-sm text-gray-400">Store purchase feedback · {storeResponses.length} responses</div>
         </div>
       </div>
+      <div className="text-xs text-center text-gray-400 bg-white rounded-xl py-2.5 px-4 border border-gray-100">
+        NPS = % Promoters (9–10) minus % Detractors (0–6). Industry benchmark: +40 is good.
+      </div>
 
-      {/* Section 2 — Per-customer NPS history */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* Per-customer NPS history */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100">
-          <h2 className="font-extrabold text-gray-900">Per-Customer NPS History</h2>
+          <SectionLabel>Per-Customer NPS History</SectionLabel>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -119,8 +118,7 @@ function CustomerNPSTab() {
             </thead>
             <tbody>
               {customerRows.map(c => (
-                <tr key={c.id}
-                  className={`border-t border-gray-100 ${c.serviceNPS !== null && c.serviceNPS <= 6 ? 'bg-red-50' : 'hover:bg-gray-50'}`}>
+                <tr key={c.id} className={`border-t border-gray-100 ${c.serviceNPS !== null && c.serviceNPS <= 6 ? 'bg-red-50' : 'hover:bg-gray-50'}`}>
                   <td className="px-4 py-3 font-medium text-gray-800">
                     {c.name}
                     <span className="ml-1.5 text-xs text-gray-400">{c.id}</span>
@@ -128,7 +126,9 @@ function CustomerNPSTab() {
                   <td className="px-4 py-3 text-center">
                     {c.serviceNPS !== null ? (
                       <>
-                        <span className={`inline-block font-bold px-2 py-0.5 rounded-full text-xs mr-1 ${c.serviceNPS >= 9 ? 'bg-green-100 text-green-700' : c.serviceNPS >= 7 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                        <span className={`inline-block font-bold px-2 py-0.5 rounded-full text-xs mr-1 ${
+                          c.serviceNPS >= 9 ? 'bg-green-100 text-green-700' : c.serviceNPS >= 7 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
+                        }`}>
                           {c.serviceNPS}
                         </span>
                         {c.serviceCaseId && <span className="text-xs text-gray-400">({c.serviceCaseId})</span>}
@@ -153,12 +153,12 @@ function CustomerNPSTab() {
         </div>
       </div>
 
-      {/* Section 3 — NPS Trend (div-based chart) */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+      {/* NPS Trend chart */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="font-extrabold text-gray-900">NPS Trend</h2>
-          <span className="text-xs text-gray-400 italic bg-gray-50 border border-gray-100 px-3 py-1 rounded-full">
-            Simulated data · Jul–Oct 2026
+          <SectionLabel>NPS Trend</SectionLabel>
+          <span className="text-xs text-gray-400 bg-gray-50 border border-gray-100 px-3 py-1 rounded-full">
+            Simulated · Jul–Oct 2026
           </span>
         </div>
         <div className="flex gap-3 items-end" style={{ height: '140px' }}>
@@ -193,7 +193,7 @@ function CustomerNPSTab() {
             </div>
           ))}
         </div>
-        <div className="flex gap-5 mt-3 justify-center text-xs text-gray-500">
+        <div className="flex gap-5 mt-4 justify-center text-xs text-gray-500">
           <span className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-sm inline-block bg-[#00a1e1]" />
             Service NPS
@@ -205,16 +205,16 @@ function CustomerNPSTab() {
         </div>
       </div>
 
-      {/* Section 4 — Promoter/Detractor breakdown */}
+      {/* Promoter / Detractor breakdown */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-          <h3 className="font-extrabold text-green-700 mb-3">Promoters (score 9–10)</h3>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <SectionLabel>Promoters (score 9–10)</SectionLabel>
           {promoters.length === 0 ? (
             <p className="text-gray-400 text-sm">No promoters yet.</p>
           ) : (
             <div className="space-y-2">
               {promoters.map(c => (
-                <div key={c.id} className="flex items-center justify-between bg-green-50 rounded-lg px-3 py-2">
+                <div key={c.id} className="flex items-center justify-between bg-green-50 rounded-xl px-3 py-2">
                   <span className="font-medium text-gray-800 text-sm">{c.name}</span>
                   <span className="text-xs font-bold bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full">{c.serviceNPS}</span>
                 </div>
@@ -222,21 +222,21 @@ function CustomerNPSTab() {
             </div>
           )}
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-          <h3 className="font-extrabold text-red-700 mb-3">Detractors (score 0–6)</h3>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <SectionLabel>Detractors (score 0–6)</SectionLabel>
           {detractors.length === 0 ? (
             <p className="text-gray-400 text-sm">No detractors.</p>
           ) : (
             <div className="space-y-2">
               {detractors.map(c => (
-                <div key={c.id} className="bg-red-50 rounded-lg px-3 py-2">
+                <div key={c.id} className="bg-red-50 rounded-xl px-3 py-2">
                   <div className="flex items-center justify-between">
                     <span className="font-medium text-gray-800 text-sm">{c.name}</span>
                     <span className="text-xs font-bold bg-red-100 text-red-700 px-2.5 py-0.5 rounded-full">{c.serviceNPS}</span>
                   </div>
                   {c.recoveryCase && (
                     <a href={`/ops/cases/${c.recoveryCase}`} className="text-xs text-[#00a1e1] hover:underline font-semibold mt-1 inline-block">
-                      Recovery case: {c.recoveryCase} →
+                      Recovery case: {c.recoveryCase}
                     </a>
                   )}
                 </div>
@@ -249,43 +249,13 @@ function CustomerNPSTab() {
   )
 }
 
-// ── Summary tiles ─────────────────────────────────────────────────────────────
-function SummaryTile({ label, value, sub, color = 'text-[#13347b]' }) {
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-      <div className={`text-2xl font-extrabold ${color}`}>{value}</div>
-      <div className="text-sm text-gray-500 mt-0.5">{label}</div>
-      {sub && <div className="text-xs text-gray-400 mt-1">{sub}</div>}
-    </div>
-  )
-}
-
-// ── RESPONSES TAB ─────────────────────────────────────────────────────────────
+// ── Responses tab ─────────────────────────────────────────────────────────────
 function ResponsesTab() {
   return (
-    <div className="space-y-8">
-      {/* Summary tiles */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <SummaryTile label="Response Rate" value="68%" sub="across all surveys" color="text-[#00a1e1]" />
-        <SummaryTile
-          label="Service NPS"
-          value={calcNPS(SURVEYS[0].responses) ?? '— No responses yet'}
-          sub="post-service"
-          color={calcNPS(SURVEYS[0].responses) == null ? 'text-gray-400' : calcNPS(SURVEYS[0].responses) >= 50 ? 'text-green-600' : 'text-amber-500'}
-        />
-        <SummaryTile
-          label="Store NPS"
-          value={calcNPS(SURVEYS[1].responses) ?? '— No responses yet'}
-          sub="store purchase"
-          color={calcNPS(SURVEYS[1].responses) == null ? 'text-gray-400' : calcNPS(SURVEYS[1].responses) >= 50 ? 'text-green-600' : 'text-amber-500'}
-        />
-        <SummaryTile label="Recovery Triggered" value="1" sub="auto-case created" color="text-red-600" />
-      </div>
-
+    <div className="space-y-6">
       {/* Per-survey cards */}
       {SURVEYS.map(survey => (
-        <div key={survey.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {/* Survey header */}
+        <div key={survey.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 flex flex-wrap gap-3 items-center">
             <div>
               <span className="font-extrabold text-gray-900 text-lg">{survey.name}</span>
@@ -298,11 +268,10 @@ function ResponsesTab() {
               <span>{survey.questions.length} questions</span>
               <span>{survey.responses.length} responses</span>
               <span>NPS: <strong className={npsColor(calcNPS(survey.responses))}>{calcNPS(survey.responses) ?? '—'}</strong></span>
-              <span>Avg score: <strong className={npsColor(Number(calcAvgScore(survey.responses)))}>{calcAvgScore(survey.responses) ?? '—'}</strong></span>
+              <span>Avg: <strong className={npsColor(Number(calcAvgScore(survey.responses)))}>{calcAvgScore(survey.responses) ?? '—'}</strong></span>
             </div>
           </div>
 
-          {/* Response table */}
           {survey.responses.length === 0 ? (
             <div className="px-5 py-8 text-center text-gray-400 text-sm">No responses yet.</div>
           ) : (
@@ -341,7 +310,7 @@ function ResponsesTab() {
                       </td>
                       <td className="px-4 py-3 text-center">
                         {r.triggeredRecovery
-                          ? <span className="inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full">⚠ Yes</span>
+                          ? <span className="inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full">Yes</span>
                           : <span className="text-gray-300 text-xs">—</span>
                         }
                       </td>
@@ -357,29 +326,20 @@ function ResponsesTab() {
   )
 }
 
-// ── BUILDER TAB ───────────────────────────────────────────────────────────────
-function BuilderTab() {
+// ── Survey List tab ───────────────────────────────────────────────────────────
+function SurveyListTab() {
   const [activeSurveys, setActiveSurveys]     = useState(SURVEYS.map(s => ({ ...s })))
   const [editing, setEditing]                 = useState(false)
-
-  // Form state
   const [surveyName, setSurveyName]           = useState('')
   const [trigger, setTrigger]                 = useState(TRIGGER_OPTIONS[0])
   const [questions, setQuestions]             = useState([newQuestion()])
   const [showSuccess, setShowSuccess]         = useState(false)
-
-  // Recovery workflow state
   const [recoveryEnabled, setRecoveryEnabled] = useState(true)
   const [recoveryThreshold, setRecoveryThreshold] = useState(5)
   const [recoveryAction, setRecoveryAction]   = useState(RECOVERY_ACTIONS[0])
 
-  function addQuestion() {
-    setQuestions(q => [...q, newQuestion()])
-  }
-
-  function removeQuestion(id) {
-    setQuestions(q => q.filter(qq => qq.id !== id))
-  }
+  function addQuestion()     { setQuestions(q => [...q, newQuestion()]) }
+  function removeQuestion(id) { setQuestions(q => q.filter(qq => qq.id !== id)) }
 
   function moveQuestion(id, dir) {
     setQuestions(q => {
@@ -422,23 +382,24 @@ function BuilderTab() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Success toast */}
+    <div className="space-y-6">
       {showSuccess && (
-        <div className="fixed top-5 right-5 z-50 bg-green-600 text-white px-5 py-3 rounded-xl shadow-xl font-semibold flex items-center gap-2 animate-pulse">
-          <span>✓</span> Survey saved successfully!
+        <div className="fixed top-5 right-5 z-50 bg-green-600 text-white px-5 py-3 rounded-xl shadow-xl font-semibold flex items-center gap-2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="w-4 h-4">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          Survey saved successfully!
         </div>
       )}
 
-      {/* Active surveys list */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-extrabold text-gray-900">Active Surveys</h2>
+          <SectionLabel>Active Surveys</SectionLabel>
           <button
             onClick={() => setEditing(true)}
-            className="bg-[#00a1e1] hover:bg-[#0090cc] text-white text-sm font-semibold px-4 py-1.5 rounded-lg transition"
+            className="bg-[#00a1e1] hover:bg-[#0090cc] text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition"
           >
-            + Create New Survey
+            + Create New
           </button>
         </div>
         <div className="divide-y divide-gray-100">
@@ -470,15 +431,15 @@ function BuilderTab() {
         </div>
       </div>
 
-      {/* Survey editor */}
       {editing && (
-        <div className="bg-white rounded-xl shadow-sm border border-[#00a1e1]/30 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-[#00a1e1]/30 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 bg-[#00a1e1]/5 flex items-center justify-between">
-            <h2 className="font-extrabold text-[#13347b]">Survey Editor</h2>
-            <button onClick={() => setEditing(false)} className="text-gray-400 hover:text-gray-600 text-sm">✕ Cancel</button>
+            <span className="font-extrabold text-[#13347b]">Survey Editor</span>
+            <button onClick={() => setEditing(false)} className="text-gray-400 hover:text-gray-600 text-sm">
+              Cancel
+            </button>
           </div>
           <div className="p-5 space-y-5">
-            {/* Name & trigger */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-500 mb-1">Survey Name</label>
@@ -501,16 +462,14 @@ function BuilderTab() {
               </div>
             </div>
 
-            {/* Questions */}
             <div>
               <div className="text-xs font-semibold text-gray-500 mb-2">Questions</div>
               <div className="space-y-3">
                 {questions.map((q, idx) => (
-                  <div key={q.id} className="flex gap-2 items-start bg-gray-50 rounded-lg p-3">
-                    {/* Order buttons */}
+                  <div key={q.id} className="flex gap-2 items-start bg-gray-50 rounded-xl p-3">
                     <div className="flex flex-col gap-0.5 mt-1">
                       <button onClick={() => moveQuestion(q.id, -1)} className="text-gray-400 hover:text-gray-700 text-xs leading-none">▲</button>
-                      <button onClick={() => moveQuestion(q.id, 1)} className="text-gray-400 hover:text-gray-700 text-xs leading-none">▼</button>
+                      <button onClick={() => moveQuestion(q.id, 1)}  className="text-gray-400 hover:text-gray-700 text-xs leading-none">▼</button>
                     </div>
                     <div className="text-xs text-gray-400 font-bold mt-1 w-4">{idx + 1}.</div>
                     <select
@@ -529,20 +488,18 @@ function BuilderTab() {
                     <button
                       onClick={() => removeQuestion(q.id)}
                       className="text-red-400 hover:text-red-600 text-xs mt-1 flex-shrink-0"
-                    >✕</button>
+                    >
+                      Remove
+                    </button>
                   </div>
                 ))}
               </div>
-              <button
-                onClick={addQuestion}
-                className="mt-3 text-sm font-semibold text-[#00a1e1] hover:underline"
-              >
+              <button onClick={addQuestion} className="mt-3 text-sm font-semibold text-[#00a1e1] hover:underline">
                 + Add Question
               </button>
             </div>
 
-            {/* Recovery workflow */}
-            <div className="border border-amber-200 rounded-lg p-4 bg-amber-50">
+            <div className="border border-amber-200 rounded-xl p-4 bg-amber-50">
               <div className="flex items-center justify-between mb-3">
                 <div className="font-semibold text-amber-800 text-sm">Auto-Recovery Workflow</div>
                 <button
@@ -555,10 +512,9 @@ function BuilderTab() {
               {recoveryEnabled && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1">Trigger when NPS ≤</label>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">Trigger when NPS is at most</label>
                     <input
-                      type="number"
-                      min={0} max={10}
+                      type="number" min={0} max={10}
                       value={recoveryThreshold}
                       onChange={e => setRecoveryThreshold(Number(e.target.value))}
                       className="w-24 border border-gray-200 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-[#00a1e1]"
@@ -578,7 +534,6 @@ function BuilderTab() {
               )}
             </div>
 
-            {/* Save */}
             <div className="flex justify-end">
               <button
                 onClick={handleSave}
@@ -594,25 +549,44 @@ function BuilderTab() {
   )
 }
 
-// ── PAGE ──────────────────────────────────────────────────────────────────────
+// ── Page ──────────────────────────────────────────────────────────────────────
+const TABS = [
+  { key: 'list',      label: 'Survey List' },
+  { key: 'responses', label: 'Responses' },
+  { key: 'nps',       label: 'NPS Analytics' },
+]
+
 export default function SurveysPage() {
   const [activeTab, setActiveTab] = useState('responses')
 
+  // Page-level stats
+  const totalResponses = SURVEYS.reduce((sum, s) => sum + s.responses.length, 0)
+  const serviceNPS     = calcNPS(SURVEYS[0].responses)
+  const npsResponses   = SURVEYS[0].responses.filter(r => r.answers?.q1 != null)
+  const promotersPct   = npsResponses.length > 0
+    ? Math.round((npsResponses.filter(r => r.answers.q1 >= 9).length / npsResponses.length) * 100)
+    : null
+  const recoveryPending = SURVEYS.flatMap(s => s.responses).filter(r => r.triggeredRecovery).length
+
+  const npsColor = serviceNPS == null ? 'text-gray-400' : serviceNPS >= 50 ? 'text-green-600' : serviceNPS >= 0 ? 'text-amber-500' : 'text-red-600'
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-extrabold text-gray-900">Surveys & Recovery</h1>
-        <p className="text-gray-400 mt-1">NPS surveys, response analytics, and auto-recovery workflows</p>
+    <OpsShell
+      title="Surveys & Recovery"
+      subtitle="NPS analytics · Response tracking · Recovery workflows"
+      breadcrumb={[{ label: 'Surveys' }]}
+    >
+      {/* ── Stat row ─────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <StatCard label="Total Responses"   value={totalResponses}                             sub="across all surveys" />
+        <StatCard label="Service NPS"       value={serviceNPS ?? '—'}  color={npsColor}        sub="post-service score" />
+        <StatCard label="Promoters"         value={promotersPct != null ? `${promotersPct}%` : '—'} color="text-green-600" sub="score 9–10" />
+        <StatCard label="Recovery Pending"  value={recoveryPending}    color="text-red-600"    sub="cases triggered" />
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit mb-8">
-        {[
-          { key: 'responses', label: 'Survey Responses' },
-          { key: 'builder',   label: 'Survey Builder' },
-          { key: 'nps',       label: 'Customer NPS' },
-        ].map(tab => (
+      {/* ── Pill tabs ────────────────────────────────────────────────────── */}
+      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit mb-6">
+        {TABS.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
@@ -627,7 +601,9 @@ export default function SurveysPage() {
         ))}
       </div>
 
-      {activeTab === 'responses' ? <ResponsesTab /> : activeTab === 'builder' ? <BuilderTab /> : <CustomerNPSTab />}
-    </div>
+      {activeTab === 'list'      && <SurveyListTab />}
+      {activeTab === 'responses' && <ResponsesTab />}
+      {activeTab === 'nps'       && <NPSAnalyticsTab />}
+    </OpsShell>
   )
 }

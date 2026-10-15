@@ -1,10 +1,9 @@
 'use client'
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import OpsShell, { ActionBtn, StatCard } from '@/components/OpsShell'
 import {
   CUSTOMERS,
-  PRODUCTS,
-  CASES,
   getProductsForCustomer,
   getCasesForCustomer,
 } from '@/lib/platformData'
@@ -41,19 +40,28 @@ function NpsChip({ score }) {
   )
 }
 
-// ─── summary tiles ───────────────────────────────────────────────────────────
+function CarePlanDot({ active }) {
+  if (active) {
+    return (
+      <span className="inline-flex items-center gap-1.5">
+        <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+        <span className="text-xs text-green-700 font-semibold">Active</span>
+      </span>
+    )
+  }
+  return <span className="text-gray-300 text-xs">—</span>
+}
+
+// ─── summary stats ───────────────────────────────────────────────────────────
 
 const total        = CUSTOMERS.length
 const carePlan     = CUSTOMERS.filter(c => c.carePlan).length
 const goldPlatinum = CUSTOMERS.filter(c => c.tier === 'Gold' || c.tier === 'Platinum').length
 const atRisk       = CUSTOMERS.filter(c => c.tags.includes('at-risk')).length
 
-const SUMMARY_TILES = [
-  { label: 'Total Customers', value: total,        color: 'text-navy' },
-  { label: 'Care Plan',       value: carePlan,      color: 'text-sky' },
-  { label: 'Gold / Platinum', value: goldPlatinum,  color: 'text-amber-600' },
-  { label: 'At-Risk',         value: atRisk,        color: 'text-red-600' },
-]
+// ─── filter chip config ──────────────────────────────────────────────────────
+
+const TIER_CHIPS = ['All', 'Platinum', 'Gold', 'Silver', 'at-risk']
 
 // ─── component ───────────────────────────────────────────────────────────────
 
@@ -76,7 +84,11 @@ export default function CustomersPage() {
         c.name.toLowerCase().includes(q) ||
         c.phone.replace(/\s/g, '').includes(q.replace(/\s/g, ''))
 
-      const matchTier  = tierFilter   === 'All' || c.tier === tierFilter
+      let matchTier
+      if (tierFilter === 'All')       matchTier = true
+      else if (tierFilter === 'at-risk') matchTier = c.tags.includes('at-risk')
+      else                               matchTier = c.tier === tierFilter
+
       const matchCity  = cityFilter   === 'All' || c.city === cityFilter
       const matchCare  = !carePlanOnly || c.carePlan
 
@@ -85,77 +97,90 @@ export default function CustomersPage() {
   }, [search, tierFilter, cityFilter, carePlanOnly])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
+    <OpsShell
+      title="Customer 360"
+      subtitle="Full customer timeline — orders, devices, cases, NPS"
+      breadcrumb={[{ label: 'Customer 360' }]}
+      actions={<ActionBtn href="/ops/cases/new" variant="primary">+ New case</ActionBtn>}
+    >
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-extrabold text-gray-900">Customers</h1>
-        <p className="text-gray-400 mt-1 text-sm">Customer 360 directory</p>
+      {/* ── Stats row ───────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <StatCard label="Total Customers" value={total} />
+        <StatCard label="Care Plan"       value={carePlan}     color="text-sky-600" />
+        <StatCard label="Gold / Platinum" value={goldPlatinum} color="text-amber-600" />
+        <StatCard label="At-Risk"         value={atRisk}       color="text-red-600" />
       </div>
 
-      {/* ── Summary tiles ──────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        {SUMMARY_TILES.map(t => (
-          <div key={t.label} className="bg-white rounded-2xl shadow-card p-5 flex flex-col gap-1">
-            <div className={`text-3xl font-extrabold ${t.color}`}>{t.value}</div>
-            <div className="text-gray-500 text-xs font-medium">{t.label}</div>
-          </div>
-        ))}
-      </div>
+      {/* ── Search + filters ────────────────────────────────────────────────── */}
+      <div className="flex flex-wrap gap-3 mb-4 items-center">
 
-      {/* ── Filter row ─────────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap gap-3 mb-6">
         {/* Search */}
         <div className="relative flex-1 min-w-[220px]">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+          </svg>
           <input
             type="text"
             placeholder="Search name or phone…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky/30 bg-white"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 bg-white shadow-sm"
           />
         </div>
-
-        {/* Tier filter */}
-        <select
-          value={tierFilter}
-          onChange={e => setTierFilter(e.target.value)}
-          className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky/30 bg-white"
-        >
-          {['All','Bronze','Silver','Gold','Platinum'].map(t => (
-            <option key={t}>{t}</option>
-          ))}
-        </select>
 
         {/* City filter */}
         <select
           value={cityFilter}
           onChange={e => setCityFilter(e.target.value)}
-          className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky/30 bg-white"
+          className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 bg-white shadow-sm text-gray-700"
         >
           {cities.map(c => <option key={c}>{c}</option>)}
         </select>
 
         {/* Care Plan toggle */}
-        <label className="flex items-center gap-2 cursor-pointer select-none bg-white border border-gray-200 rounded-xl px-4 py-2.5">
+        <label className="flex items-center gap-2 cursor-pointer select-none bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm">
           <input
             type="checkbox"
             checked={carePlanOnly}
             onChange={e => setCarePlanOnly(e.target.checked)}
-            className="accent-sky w-4 h-4"
+            className="w-4 h-4 rounded accent-sky-500"
           />
           <span className="text-sm text-gray-700 font-medium">Care Plan only</span>
         </label>
       </div>
 
-      {/* ── Table ──────────────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl shadow-card overflow-x-auto">
-        <table className="w-full text-sm">
+      {/* ── Tier filter chips ────────────────────────────────────────────────── */}
+      <div className="flex flex-wrap gap-2 mb-5">
+        {TIER_CHIPS.map(chip => {
+          const active = tierFilter === chip
+          return (
+            <button
+              key={chip}
+              onClick={() => setTierFilter(chip)}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
+                active
+                  ? 'bg-[#13347b] text-white border-[#13347b] shadow-sm'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              {chip === 'at-risk' ? 'At-Risk' : chip}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* ── Table ────────────────────────────────────────────────────────────── */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
+        <table className="w-full min-w-[900px]">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100 text-left">
+            <tr className="border-b border-gray-100">
               {['Customer', 'Tier', 'City', 'Member Since', 'Total Spend', 'Care Plan', 'NPS', 'Devices', 'Open Cases', ''].map(h => (
-                <th key={h} className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                <th key={h} className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap">
                   {h}
                 </th>
               ))}
@@ -164,44 +189,53 @@ export default function CustomersPage() {
           <tbody className="divide-y divide-gray-50">
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={10} className="px-4 py-12 text-center text-gray-400">
+                <td colSpan={10} className="px-4 py-16 text-center text-gray-400 text-sm">
                   No customers match your filters.
                 </td>
               </tr>
             )}
             {filtered.map(c => {
-              const devices   = getProductsForCustomer(c.id)
-              const allCases  = getCasesForCustomer(c.id)
-              const openCases = allCases.filter(cs =>
+              const initials   = c.name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()
+              const devices    = getProductsForCustomer(c.id)
+              const allCases   = getCasesForCustomer(c.id)
+              const openCases  = allCases.filter(cs =>
                 ['open', 'in-progress', 'parts-awaited', 'scheduled'].includes(cs.status)
               )
 
               return (
                 <tr
                   key={c.id}
-                  className="hover:bg-sky-light/40 transition-colors cursor-pointer group"
+                  className="hover:bg-gray-50 transition-colors cursor-pointer group"
                   onClick={() => window.location.href = `/ops/customers/${c.id}`}
                 >
                   {/* Customer identity */}
                   <td className="px-4 py-4">
-                    <div className="font-semibold text-gray-900 group-hover:text-navy">{c.name}</div>
-                    <div className="text-gray-500 text-xs mt-0.5">{c.phone}</div>
-                    <div className="text-gray-400 text-xs">{c.email}</div>
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {c.tags.map(tag => (
-                        <span
-                          key={tag}
-                          className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium
-                            ${tag === 'at-risk'
-                              ? 'bg-red-100 text-red-600'
-                              : tag === 'high-value'
-                              ? 'bg-amber-100 text-amber-700'
-                              : 'bg-gray-100 text-gray-500'}`}
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                    <div className="flex items-center gap-3">
+                      {/* Avatar */}
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#13347b] to-[#00a1e1] flex items-center justify-center flex-shrink-0">
+                        <span className="text-[11px] font-bold text-white">{initials}</span>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-sm text-gray-900 group-hover:text-[#13347b] transition-colors">{c.name}</div>
+                        <div className="text-gray-500 text-xs mt-0.5">{c.phone}</div>
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {c.tags.map(tag => (
+                            <span
+                              key={tag}
+                              className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                                tag === 'at-risk'
+                                  ? 'bg-red-100 text-red-600'
+                                  : tag === 'high-value'
+                                  ? 'bg-amber-100 text-amber-700'
+                                  : 'bg-gray-100 text-gray-500'
+                              }`}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </td>
 
@@ -212,27 +246,25 @@ export default function CustomersPage() {
                     </span>
                   </td>
 
-                  {/* City + Pincode */}
-                  <td className="px-4 py-4">
-                    <div className="text-gray-800">{c.city}</div>
+                  {/* City */}
+                  <td className="px-4 py-4 text-sm text-gray-700">
+                    <div>{c.city}</div>
                     <div className="text-gray-400 text-xs">{c.pincode}</div>
                   </td>
 
                   {/* Member Since */}
-                  <td className="px-4 py-4 text-gray-600 whitespace-nowrap">
+                  <td className="px-4 py-4 text-sm text-gray-700 whitespace-nowrap">
                     {formatDate(c.since)}
                   </td>
 
                   {/* Total Spend */}
-                  <td className="px-4 py-4 font-semibold text-gray-900 whitespace-nowrap">
+                  <td className="px-4 py-4 text-sm font-semibold text-gray-900 whitespace-nowrap">
                     {formatRupees(c.totalSpend)}
                   </td>
 
                   {/* Care Plan */}
                   <td className="px-4 py-4">
-                    {c.carePlan
-                      ? <span className="text-green-600 font-bold text-base">✓</span>
-                      : <span className="text-gray-300 font-bold text-base">—</span>}
+                    <CarePlanDot active={c.carePlan} />
                   </td>
 
                   {/* NPS */}
@@ -241,7 +273,7 @@ export default function CustomersPage() {
                   </td>
 
                   {/* Devices */}
-                  <td className="px-4 py-4 text-center text-gray-700 font-medium">
+                  <td className="px-4 py-4 text-center text-sm text-gray-700 font-medium">
                     {devices.length}
                   </td>
 
@@ -251,17 +283,20 @@ export default function CustomersPage() {
                       ? <span className="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full font-bold">
                           {openCases.length}
                         </span>
-                      : <span className="text-gray-400 text-xs">0</span>}
+                      : <span className="text-gray-400 text-xs">0</span>
+                    }
                   </td>
 
-                  {/* Actions */}
+                  {/* Arrow */}
                   <td className="px-4 py-4">
                     <Link
                       href={`/ops/customers/${c.id}`}
                       onClick={e => e.stopPropagation()}
-                      className="text-sky hover:text-navy font-semibold text-sm whitespace-nowrap"
+                      className="inline-flex items-center text-[#00a1e1] hover:text-[#13347b] transition-colors"
                     >
-                      View 360 →
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </Link>
                   </td>
                 </tr>
@@ -275,6 +310,6 @@ export default function CustomersPage() {
           Showing {filtered.length} of {CUSTOMERS.length} customers
         </div>
       </div>
-    </div>
+    </OpsShell>
   )
 }
