@@ -34,22 +34,18 @@ const plColor = (val) =>
   val > 0 ? 'text-emerald-600 font-bold' : val < 0 ? 'text-red-600 font-bold' : 'text-gray-500'
 
 // ─── Brand logo / initial circle ──────────────────────────────────────────────
-// Simple Icons CDN (SVG, no API key) for major global brands
-// Google favicon fallback for regional/Indian brands
-const SI  = (slug) => `https://cdn.simpleicons.org/${slug}`
-const FAV = (d)    => `https://www.google.com/s2/favicons?sz=128&domain_url=${d}`
-
+// Self-hosted in /public/brands/ — no external CDN dependency
 const BRAND_LOGOS = {
-  B001: null,                      // Reliance — branded initial
-  B002: SI('sony'),
-  B003: SI('lg'),
-  B004: SI('samsung'),
-  B005: FAV('daikinindia.com'),
-  B006: SI('whirlpool'),
-  B007: SI('bosch'),
-  B008: FAV('ifb.in'),
-  B009: FAV('voltas.com'),
-  B010: FAV('godrej.com'),
+  B001: null,                        // Reliance — branded initial
+  B002: '/brands/sony.svg',
+  B003: '/brands/lg.svg',
+  B004: '/brands/samsung.svg',
+  B005: '/brands/daikin.png',
+  B006: '/brands/whirlpool.png',
+  B007: '/brands/bosch.svg',
+  B008: '/brands/ifb.png',
+  B009: '/brands/voltas.png',
+  B010: '/brands/godrej.png',
 }
 
 // Actual brand colors used as fallback initials
