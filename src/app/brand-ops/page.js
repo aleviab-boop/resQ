@@ -34,17 +34,19 @@ const plColor = (val) =>
   val > 0 ? 'text-emerald-600 font-bold' : val < 0 ? 'text-red-600 font-bold' : 'text-gray-500'
 
 // ─── Brand logo / initial circle ──────────────────────────────────────────────
+// Google favicon service — reliable, CDN-backed, no API key needed
+const FAV = (d) => `https://www.google.com/s2/favicons?sz=128&domain_url=${d}`
 const BRAND_LOGOS = {
-  B001: null,                                          // Reliance — use initial
-  B002: 'https://logo.clearbit.com/sony.com',
-  B003: 'https://logo.clearbit.com/lg.com',
-  B004: 'https://logo.clearbit.com/samsung.com',
-  B005: 'https://logo.clearbit.com/daikin.com',
-  B006: 'https://logo.clearbit.com/whirlpool.com',
-  B007: 'https://logo.clearbit.com/bosch.com',
-  B008: 'https://logo.clearbit.com/ifbappliances.com',
-  B009: 'https://logo.clearbit.com/voltas.com',
-  B010: 'https://logo.clearbit.com/godrej.com',
+  B001: null,                                    // Reliance — keep branded initial
+  B002: FAV('sony.com'),
+  B003: FAV('lg.com'),
+  B004: FAV('samsung.com'),
+  B005: FAV('daikin.com'),
+  B006: FAV('whirlpool.com'),
+  B007: FAV('bosch.com'),
+  B008: FAV('ifbappliances.com'),
+  B009: FAV('voltas.com'),
+  B010: FAV('godrej.com'),
 }
 
 const BRAND_PALETTE = [
