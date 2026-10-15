@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { CASES, PRODUCTS, CUSTOMERS } from '@/lib/platformData'
+import OpsShell, { StatCard, SectionLabel, ActionBtn } from '@/components/OpsShell'
 
 // ─── Brand data ────────────────────────────────────────────────────────────────
 const BRANDS = [
@@ -32,14 +33,31 @@ const npsColor = (nps) =>
 const plColor = (val) =>
   val > 0 ? 'text-emerald-600 font-bold' : val < 0 ? 'text-red-600 font-bold' : 'text-gray-500'
 
-// ─── Summary tile ──────────────────────────────────────────────────────────────
-function Tile({ label, value, sub, accent, children }) {
+// ─── Brand initial circle ──────────────────────────────────────────────────────
+const BRAND_PALETTE = [
+  { bg: '#e0f2fe', color: '#0369a1' },
+  { bg: '#fce7f3', color: '#9d174d' },
+  { bg: '#dcfce7', color: '#166534' },
+  { bg: '#fef3c7', color: '#92400e' },
+  { bg: '#ede9fe', color: '#6d28d9' },
+  { bg: '#ffedd5', color: '#9a3412' },
+  { bg: '#dbeafe', color: '#1e40af' },
+  { bg: '#f0fdf4', color: '#15803d' },
+  { bg: '#fdf4ff', color: '#7e22ce' },
+  { bg: '#fff1f2', color: '#9f1239' },
+]
+
+function BrandInitial({ brand, size = 'sm' }) {
+  const idx = parseInt(brand.id.replace('B', ''), 10) % BRAND_PALETTE.length
+  const { bg, color } = BRAND_PALETTE[idx]
+  const dim = size === 'lg' ? 40 : size === 'md' ? 32 : 24
+  const font = size === 'lg' ? 15 : size === 'md' ? 12 : 10
   return (
-    <div className={`bg-white rounded-2xl shadow-card p-5 flex flex-col gap-1 ${accent ? 'border-l-4 ' + accent : ''}`}>
-      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</p>
-      <p className="text-2xl font-extrabold text-gray-900">{value}</p>
-      {sub && <p className="text-xs text-gray-500">{sub}</p>}
-      {children}
+    <div
+      className="rounded-xl flex items-center justify-center font-extrabold shrink-0"
+      style={{ width: dim, height: dim, background: bg, color, fontSize: font }}
+    >
+      {brand.name[0]}
     </div>
   )
 }
@@ -59,8 +77,8 @@ function BrandBar({ brand, onRenegotiate }) {
   return (
     <div className="py-3.5 border-b border-gray-100 last:border-0 group">
       <div className="flex items-center gap-3 mb-2">
-        <div className="w-28 shrink-0 flex items-center gap-1.5">
-          <span className="text-xl leading-none">{brand.logo}</span>
+        <div className="w-28 shrink-0 flex items-center gap-2">
+          <BrandInitial brand={brand} size="md" />
           <div>
             <p className="text-xs font-bold text-gray-800">{brand.name}</p>
             <p className="text-[10px] text-gray-400">{brand.category}</p>
@@ -128,7 +146,6 @@ const MACROS = [
   {
     id: 'M1',
     label: 'Cost Recovery Proposal',
-    icon: '💰',
     description: 'Request rate increase to cover actual service cost + 10% margin',
     targetRate: (b) => Math.ceil(b.actualCost * 1.1 / 10) * 10,
     subject: (b) => `Service Rate Revision Request — ${b.name} × resQ`,
@@ -154,7 +171,6 @@ resQ Service Contracts Team`,
   {
     id: 'M2',
     label: 'SLA Penalty Clause',
-    icon: '📋',
     description: 'Add SLA breach penalties to the existing contract',
     targetRate: (b) => b.paidPerJob + 50,
     subject: (b) => `SLA Amendment Proposal — ${b.name} Contract`,
@@ -181,7 +197,6 @@ resQ Service Contracts Team`,
   {
     id: 'M3',
     label: 'Escalation Notice',
-    icon: '⚠️',
     description: '30-day notice of intent to suspend brand unless rate is revised',
     targetRate: (b) => Math.ceil(b.actualCost * 1.05 / 10) * 10,
     subject: (b) => `Notice of Contract Review — ${b.name} [Action Required]`,
@@ -204,7 +219,6 @@ VP — Brand Contracts, resQ by Reliance`,
   {
     id: 'M4',
     label: 'Mutual Review Request',
-    icon: '🤝',
     description: 'Invite the brand to a joint cost review meeting — collaborative tone',
     targetRate: (b) => Math.ceil((b.paidPerJob + b.actualCost) / 2 / 10) * 10,
     subject: (b) => `Joint Cost Review Invitation — ${b.name} × resQ`,
@@ -232,6 +246,30 @@ const APPROVERS = [
   { id: 'A2', name: 'Rahul Mehta',    role: 'CFO — resQ',             avatar: 'RM' },
   { id: 'A3', name: 'Ananya Iyer',    role: 'Legal Counsel',          avatar: 'AI' },
 ]
+
+// Macro icon SVGs
+function MacroIcon({ id }) {
+  if (id === 'M1') return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  )
+  if (id === 'M2') return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" />
+    </svg>
+  )
+  if (id === 'M3') return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+    </svg>
+  )
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+    </svg>
+  )
+}
 
 function RenegotiationModal({ brand, onClose }) {
   const [step, setStep]           = useState(1)
@@ -268,7 +306,7 @@ function RenegotiationModal({ brand, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100" style={{ background: 'linear-gradient(135deg, #13347b 0%, #00a1e1 100%)' }}>
           <div className="flex items-center gap-3">
-            <span className="text-2xl">{brand.logo}</span>
+            <BrandInitial brand={brand} size="lg" />
             <div>
               <h2 className="text-base font-extrabold text-white">Renegotiate — {brand.name}</h2>
               <p className="text-xs text-blue-200">Loss: −₹{lossPerJob}/job · −{fmtCrore(totalLoss)}/month</p>
@@ -396,8 +434,12 @@ function RenegotiationModal({ brand, onClose }) {
                         : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
-                    <div className="flex items-start gap-2.5">
-                      <span className="text-2xl leading-none">{m.icon}</span>
+                    <div className="flex items-start gap-3">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                        selectedMacro?.id === m.id ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        <MacroIcon id={m.id} />
+                      </div>
                       <div>
                         <p className="text-sm font-bold text-gray-900">{m.label}</p>
                         <p className="text-xs text-gray-500 mt-0.5 leading-snug">{m.description}</p>
@@ -430,7 +472,7 @@ function RenegotiationModal({ brand, onClose }) {
                 </div>
                 {selectedMacro && (
                   <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">
-                    {selectedMacro.icon} {selectedMacro.label}
+                    {selectedMacro.label}
                   </span>
                 )}
               </div>
@@ -500,7 +542,6 @@ function RenegotiationModal({ brand, onClose }) {
                   onChange={e => setNote(e.target.value)}
                 />
               </div>
-              {/* Summary card */}
               {approver && (
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800">
                   <p className="font-bold mb-1.5">Approval packet will include:</p>
@@ -526,14 +567,13 @@ function RenegotiationModal({ brand, onClose }) {
               <div className="rounded-xl border border-gray-200 overflow-hidden">
                 <div className="bg-gray-50 px-4 py-2.5 border-b border-gray-100 text-xs font-bold text-gray-600 uppercase tracking-wide">Packet summary</div>
                 {[
-                  ['Brand', `${brand.logo} ${brand.name}`],
+                  ['Brand', brand.name],
                   ['Current rate', `₹${brand.paidPerJob}/job`],
                   ['Proposed rate', `₹${targetRate}/job`],
                   ['Rate increase', `+${Math.round(((targetRate - brand.paidPerJob) / brand.paidPerJob) * 100)}%`],
                   ['Monthly recovery', `+${fmtCrore(newMonthly)}`],
                   ['Macro', selectedMacro?.label || '—'],
                   ['Approver', approver?.name || '—'],
-                  ['Tone', selectedMacro?.icon + ' ' + (selectedMacro?.label || '—')],
                 ].map(([k, v]) => (
                   <div key={k} className="flex items-center px-4 py-2.5 border-b border-gray-50 last:border-0 text-sm">
                     <span className="text-xs text-gray-500 w-32 shrink-0">{k}</span>
@@ -729,6 +769,7 @@ export default function BrandOpsPage() {
   const ownSharePct   = Math.round((relianceJobs / totalJobs) * 100)
   const totalBreaches = BRANDS.reduce((s, b) => s + b.slaBreaches, 0)
   const lossBrands    = BRANDS.filter(b => !b.isOwnBrand && b.actualCost > b.paidPerJob)
+  const totalRevenue  = BRANDS.filter(b => !b.isOwnBrand).reduce((s, b) => s + b.revenue, 0)
 
   const categories = ['All', ...Array.from(new Set(BRANDS.filter(b => !b.isOwnBrand).map(b => b.category)))]
 
@@ -744,283 +785,289 @@ export default function BrandOpsPage() {
   const chartBrands  = BRANDS.filter(b => !b.isOwnBrand).sort((a, b) => (b.paidPerJob - b.actualCost) - (a.paidPerJob - a.actualCost))
 
   return (
-    <div className="min-h-screen" style={{ background: '#f5f7fa' }}>
+    <OpsShell
+      title="Brand Operations"
+      subtitle="Per-brand P&L · SLA compliance · Contract health"
+      breadcrumb={[{ label: 'Brand Ops' }]}
+      actions={
+        <ActionBtn variant="primary" onClick={() => lossBrands[0] && setRenegBrand(lossBrands[0])}>
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          </svg>
+          Renegotiate
+        </ActionBtn>
+      }
+    >
       {renegBrand && <RenegotiationModal brand={renegBrand} onClose={() => setRenegBrand(null)} />}
 
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-8">
+      {/* KPI strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        <StatCard label="Total Brands" value="10" sub="1 own · 9 third-party" />
+        <StatCard label="Jobs (MTD)" value={new Intl.NumberFormat('en-IN').format(totalJobs)} sub="across all brands" />
 
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg font-bold shrink-0"
-              style={{ background: 'linear-gradient(135deg, #13347b 0%, #00a1e1 100%)' }}>
-              🤝
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">Brand Operations</h1>
-              <p className="text-sm text-gray-500 font-medium mt-0.5">Multi-brand SLA&nbsp;&nbsp;·&nbsp;&nbsp;Cost Attribution&nbsp;&nbsp;·&nbsp;&nbsp;P&amp;L</p>
-            </div>
-          </div>
-          <div className="mt-4 inline-flex items-center gap-2 bg-white rounded-xl shadow-card px-4 py-2 text-sm text-gray-600">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />
-            October 2026&nbsp;&nbsp;·&nbsp;&nbsp;Month to date
+        {/* Own brand share — custom card */}
+        <div className="bg-white rounded-2xl px-5 py-4 border border-gray-100 col-span-2 sm:col-span-1">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Own Brand Share</p>
+          <p className="text-2xl font-extrabold leading-none" style={{ color: '#13347b' }}>{ownSharePct}%</p>
+          <p className="text-[11px] text-gray-400 mt-1">{new Intl.NumberFormat('en-IN').format(relianceJobs)} Reliance jobs</p>
+          <div className="mt-3 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-full rounded-full" style={{ width: `${ownSharePct}%`, background: 'linear-gradient(90deg, #13347b, #00a1e1)' }} />
           </div>
         </div>
 
-        {/* Summary tiles */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-          <Tile label="Total Brands" value="10" sub="1 own + 9 third-party" />
-          <Tile label="Total Jobs (MTD)" value={new Intl.NumberFormat('en-IN').format(totalJobs)} sub="across all brands" />
-          <div className="bg-white rounded-2xl shadow-card p-5 flex flex-col gap-1 col-span-2 sm:col-span-1">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Own Brand Share</p>
-            <p className="text-2xl font-extrabold" style={{ color: '#13347b' }}>{ownSharePct}%</p>
-            <p className="text-xs text-gray-500">{new Intl.NumberFormat('en-IN').format(relianceJobs)} Reliance jobs</p>
-            <div className="mt-2 h-2 rounded-full bg-gray-100 overflow-hidden">
-              <div className="h-full rounded-full" style={{ width: `${ownSharePct}%`, background: 'linear-gradient(90deg, #13347b, #00a1e1)' }} />
-            </div>
+        <StatCard
+          label="Loss-making Brands"
+          value={lossBrands.length}
+          sub={`of ${BRANDS.length - 1} third-party`}
+          color="text-amber-600"
+        />
+        <StatCard
+          label="SLA Breaches"
+          value={new Intl.NumberFormat('en-IN').format(totalBreaches)}
+          sub="this month"
+          color="text-red-600"
+        />
+      </div>
+
+      {/* ── Chart section ──────────────────────────────────────────────────────── */}
+      <SectionLabel>Paid Rate vs Actual Cost — per Job</SectionLabel>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
+          <p className="text-xs text-gray-500">Third-party brands only · sorted by margin (best to worst) · hover for action</p>
+          <div className="flex items-center gap-5 text-xs font-medium">
+            <span className="flex items-center gap-1.5">
+              <span className="w-10 h-2.5 rounded-full inline-block" style={{ background: '#00a1e1' }} />
+              Paid rate
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-10 h-2.5 rounded-full inline-block bg-red-400" />
+              Cost (loss)
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-10 h-2.5 rounded-full inline-block bg-emerald-500" />
+              Cost (profit)
+            </span>
           </div>
-          <Tile label="Loss-making Brands" value={lossBrands.length} sub={`of ${BRANDS.length - 1} third-party`} accent="border-amber-400">
-            <p className="text-xs text-amber-600 font-medium mt-1">Renegotiation needed</p>
-          </Tile>
-          <Tile label="Total SLA Breaches" value={new Intl.NumberFormat('en-IN').format(totalBreaches)} sub="this month" accent="border-red-400">
-            <p className="text-xs text-red-500 font-medium mt-1">Review breach SLAs</p>
-          </Tile>
         </div>
 
-        {/* ── Improved Paid vs Cost chart ──────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl shadow-card p-6 mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
-            <div>
-              <h2 className="text-base font-bold text-gray-900">Paid Rate vs Actual Cost — per Job</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Third-party brands only · sorted by margin (best to worst) · hover for action</p>
-            </div>
-            <div className="flex items-center gap-5 text-xs font-medium">
-              <span className="flex items-center gap-1.5">
-                <span className="w-10 h-2.5 rounded-full inline-block" style={{ background: '#00a1e1' }} />
-                Paid rate
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-10 h-2.5 rounded-full inline-block bg-red-400" />
-                Cost (loss)
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-10 h-2.5 rounded-full inline-block bg-emerald-500" />
-                Cost (profit)
+        {/* Scale labels */}
+        <div className="flex ml-28 sm:ml-36 mb-1">
+          {[0, 25, 50, 75, 100].map(pct => (
+            <div key={pct} className="flex-1 text-right">
+              <span className="text-[10px] text-gray-300 font-medium">
+                ₹{Math.round((CHART_MAX * pct) / 100 / 50) * 50}
               </span>
             </div>
-          </div>
-
-          {/* Scale labels */}
-          <div className="flex ml-28 sm:ml-36 mb-1">
+          ))}
+        </div>
+        <div className="relative ml-28 sm:ml-36 mr-36 mb-1 h-px">
+          <div className="absolute inset-0 flex">
             {[0, 25, 50, 75, 100].map(pct => (
-              <div key={pct} className="flex-1 text-right">
-                <span className="text-[10px] text-gray-300 font-medium">
-                  ₹{Math.round((CHART_MAX * pct) / 100 / 50) * 50}
-                </span>
-              </div>
+              <div key={pct} className="flex-1 border-r border-gray-100 last:border-0" />
             ))}
           </div>
-          {/* Gridlines */}
-          <div className="relative ml-28 sm:ml-36 mr-36 mb-1 h-px">
-            <div className="absolute inset-0 flex">
-              {[0, 25, 50, 75, 100].map(pct => (
-                <div key={pct} className="flex-1 border-r border-gray-100 last:border-0" />
-              ))}
-            </div>
-          </div>
+        </div>
 
-          <div className="divide-y divide-gray-50">
-            {chartBrands.map(b => <BrandBar key={b.id} brand={b} onRenegotiate={setRenegBrand} />)}
+        <div className="divide-y divide-gray-50">
+          {chartBrands.map(b => <BrandBar key={b.id} brand={b} onRenegotiate={setRenegBrand} />)}
+        </div>
+      </div>
+
+      {/* ── Brand Roster ───────────────────────────────────────────────────────── */}
+      <SectionLabel>Brand Roster</SectionLabel>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+          <p className="text-xs text-gray-500">Own brand first · third-party sorted by P&amp;L · click a row to expand economics</p>
+          <div className="flex flex-wrap gap-2">
+            {categories.map(cat => (
+              <button key={cat} onClick={() => setCategoryFilter(cat)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
+                  categoryFilter === cat ? 'text-white border-transparent' : 'text-gray-600 border-gray-200 bg-white hover:border-gray-300'
+                }`}
+                style={categoryFilter === cat ? { background: '#13347b', borderColor: '#13347b' } : {}}>
+                {cat}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Brand roster table */}
-        <div className="bg-white rounded-2xl shadow-card p-6 mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
-            <div>
-              <h2 className="text-base font-bold text-gray-900">Brand Roster</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Own brand first · third-party sorted by P&amp;L · click a row to expand economics</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {categories.map(cat => (
-                <button key={cat} onClick={() => setCategoryFilter(cat)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
-                    categoryFilter === cat ? 'text-white border-transparent' : 'text-gray-600 border-gray-200 bg-white hover:border-gray-300'
-                  }`}
-                  style={categoryFilter === cat ? { background: '#13347b', borderColor: '#13347b' } : {}}>
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="overflow-x-auto -mx-6 px-6">
-            <table className="w-full text-sm min-w-[900px]">
-              <thead>
-                <tr className="border-b border-gray-100">
-                  {['Brand', 'Category', 'Jobs', 'Revenue', 'Paid / Job', 'Cost / Job', 'P&L / Job', 'Total P&L', 'SLA Days', 'SLA Breaches', 'NPS'].map(col => (
-                    <th key={col} className="pb-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide pr-4 whitespace-nowrap">{col}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {tableRows.map(b => {
-                  const pl       = plPerJob(b)
-                  const totalPl  = grossProfit(b)
-                  const isOwn    = b.isOwnBrand
-                  const isSelected = selectedBrand?.id === b.id
-                  return (
-                    <tr key={b.id}
-                      onClick={() => setSelectedBrand(isSelected ? null : b)}
-                      className={`border-b border-gray-50 hover:bg-sky-50/40 transition-colors cursor-pointer ${isSelected ? 'ring-1 ring-inset ring-sky-300' : ''}`}
-                      style={isOwn && !isSelected ? { background: '#f0f9ff' } : isSelected ? { background: '#eff6ff' } : {}}>
-                      <td className="py-3 pr-4">
-                        <div className="flex items-center gap-2 whitespace-nowrap">
-                          <span className="text-xl leading-none">{b.logo}</span>
-                          <div>
-                            <p className="font-semibold text-gray-900 text-xs">{b.name}</p>
-                            {isOwn && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{ background: '#13347b' }}>Own</span>}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3 pr-4 text-xs text-gray-500 whitespace-nowrap">{b.category}</td>
-                      <td className="py-3 pr-4 text-xs font-semibold text-gray-800">{new Intl.NumberFormat('en-IN').format(b.jobsThisMonth)}</td>
-                      <td className="py-3 pr-4 text-xs text-gray-700">{isOwn ? <span className="text-gray-400 italic">—</span> : fmtCrore(b.revenue)}</td>
-                      <td className="py-3 pr-4 text-xs text-gray-700">{isOwn ? <span className="text-gray-400 italic">—</span> : `₹${b.paidPerJob}`}</td>
-                      <td className="py-3 pr-4 text-xs text-gray-700">₹{b.actualCost}</td>
-                      <td className="py-3 pr-4 text-xs whitespace-nowrap">
-                        {pl === null ? <span className="text-gray-400 italic">Cost centre</span> : (
-                          <span className={plColor(pl)}>{pl >= 0 ? '+' : '−'}₹{fmt(Math.abs(pl))}</span>
-                        )}
-                      </td>
-                      <td className="py-3 pr-4 text-xs whitespace-nowrap">
-                        {totalPl === null ? <span className="text-gray-400 italic">—</span> : (
-                          <span className={plColor(totalPl)}>{totalPl >= 0 ? '+' : '−'}{fmtCrore(Math.abs(totalPl))}</span>
-                        )}
-                      </td>
-                      <td className="py-3 pr-4 text-xs text-center">
-                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">{b.slaDays}d</span>
-                      </td>
-                      <td className="py-3 pr-4 text-xs text-center">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${b.slaBreaches > 40 ? 'bg-red-50 text-red-700' : b.slaBreaches > 20 ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
-                          {b.slaBreaches}
-                        </span>
-                      </td>
-                      <td className="py-3 pr-4 text-xs text-center"><NpsBadge nps={b.nps} /></td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {selectedBrand && (
-            <BrandDrillDown
-              brand={selectedBrand}
-              onClose={() => setSelectedBrand(null)}
-              onRenegotiate={(b) => { setSelectedBrand(null); setRenegBrand(b) }}
-            />
-          )}
-        </div>
-
-        {/* Bottom row */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-
-          {/* Renegotiation needed */}
-          <div className="lg:col-span-3 bg-white rounded-2xl shadow-card overflow-hidden">
-            <div className="px-6 py-4 border-b-2 border-amber-400" style={{ background: 'linear-gradient(90deg, #fffbeb, #fff)' }}>
-              <div className="flex items-center gap-2">
-                <span className="text-lg">⚠️</span>
-                <h2 className="text-base font-bold text-amber-800">Renegotiation Needed</h2>
-              </div>
-              <p className="text-xs text-amber-700 mt-0.5">
-                {lossBrands.length} brand{lossBrands.length !== 1 ? 's' : ''} paying below actual service cost — every job loses money
-              </p>
-            </div>
-            <div className="p-5 flex flex-col gap-3">
-              {lossBrands.sort((a, b) => (a.paidPerJob - a.actualCost) - (b.paidPerJob - b.actualCost)).map(b => {
-                const lossPerJob = b.actualCost - b.paidPerJob
-                const totalLoss  = lossPerJob * b.jobsThisMonth
+        <div className="overflow-x-auto -mx-6 px-6">
+          <table className="w-full text-sm min-w-[900px]">
+            <thead>
+              <tr className="border-b border-gray-100">
+                {['Brand', 'Category', 'Jobs', 'Revenue', 'Paid / Job', 'Cost / Job', 'P&L / Job', 'Total P&L', 'SLA Days', 'SLA Breaches', 'NPS'].map(col => (
+                  <th key={col} className="pb-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide pr-4 whitespace-nowrap">{col}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tableRows.map(b => {
+                const pl       = plPerJob(b)
+                const totalPl  = grossProfit(b)
+                const isOwn    = b.isOwnBrand
+                const isSelected = selectedBrand?.id === b.id
                 return (
-                  <div key={b.id} className="flex items-center gap-4 p-4 rounded-xl border border-red-100" style={{ background: '#fff5f5' }}>
-                    <span className="text-2xl leading-none shrink-0">{b.logo}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900 text-sm">{b.name}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{b.category}</p>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
-                        <span className="text-xs text-gray-600">Paid <strong className="text-gray-800">₹{b.paidPerJob}</strong></span>
-                        <span className="text-xs text-gray-600">Cost <strong className="text-gray-800">₹{b.actualCost}</strong></span>
+                  <tr key={b.id}
+                    onClick={() => setSelectedBrand(isSelected ? null : b)}
+                    className={`border-b border-gray-50 hover:bg-sky-50/40 transition-colors cursor-pointer ${isSelected ? 'ring-1 ring-inset ring-sky-300' : ''}`}
+                    style={isOwn && !isSelected ? { background: '#f0f9ff' } : isSelected ? { background: '#eff6ff' } : {}}>
+                    <td className="py-3 pr-4">
+                      <div className="flex items-center gap-2.5 whitespace-nowrap">
+                        <BrandInitial brand={b} size="md" />
+                        <div>
+                          <p className="font-semibold text-gray-900 text-xs">{b.name}</p>
+                          {isOwn && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{ background: '#13347b' }}>Own</span>}
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-xs text-gray-500 mb-1">Loss / job</p>
-                      <p className="text-lg font-extrabold text-red-600">−₹{fmt(lossPerJob)}</p>
-                      <p className="text-xs text-red-500 font-semibold mt-0.5">−{fmtCrore(totalLoss)} / month</p>
-                      <button
-                        onClick={() => setRenegBrand(b)}
-                        className="mt-2 text-[11px] font-bold px-3 py-1.5 rounded-lg text-white transition hover:opacity-90"
-                        style={{ background: '#13347b' }}
-                      >
-                        Renegotiate →
-                      </button>
-                    </div>
-                  </div>
+                    </td>
+                    <td className="py-3 pr-4 text-xs text-gray-500 whitespace-nowrap">{b.category}</td>
+                    <td className="py-3 pr-4 text-xs font-semibold text-gray-800">{new Intl.NumberFormat('en-IN').format(b.jobsThisMonth)}</td>
+                    <td className="py-3 pr-4 text-xs text-gray-700">{isOwn ? <span className="text-gray-400 italic">—</span> : fmtCrore(b.revenue)}</td>
+                    <td className="py-3 pr-4 text-xs text-gray-700">{isOwn ? <span className="text-gray-400 italic">—</span> : `₹${b.paidPerJob}`}</td>
+                    <td className="py-3 pr-4 text-xs text-gray-700">₹{b.actualCost}</td>
+                    <td className="py-3 pr-4 text-xs whitespace-nowrap">
+                      {pl === null ? <span className="text-gray-400 italic">Cost centre</span> : (
+                        <span className={plColor(pl)}>{pl >= 0 ? '+' : '−'}₹{fmt(Math.abs(pl))}</span>
+                      )}
+                    </td>
+                    <td className="py-3 pr-4 text-xs whitespace-nowrap">
+                      {totalPl === null ? <span className="text-gray-400 italic">—</span> : (
+                        <span className={plColor(totalPl)}>{totalPl >= 0 ? '+' : '−'}{fmtCrore(Math.abs(totalPl))}</span>
+                      )}
+                    </td>
+                    <td className="py-3 pr-4 text-xs text-center">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">{b.slaDays}d</span>
+                    </td>
+                    <td className="py-3 pr-4 text-xs text-center">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${b.slaBreaches > 40 ? 'bg-red-50 text-red-700' : b.slaBreaches > 20 ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                        {b.slaBreaches}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-4 text-xs text-center"><NpsBadge nps={b.nps} /></td>
+                  </tr>
                 )
               })}
-              <div className="flex items-center justify-between p-4 rounded-xl mt-1"
-                style={{ background: 'linear-gradient(90deg, #fef2f2, #fff5f5)', border: '1px solid #fecaca' }}>
-                <p className="text-sm font-bold text-red-800">Total monthly loss on loss-making brands</p>
-                <p className="text-xl font-extrabold text-red-700">
-                  −{fmtCrore(lossBrands.reduce((s, b) => s + (b.actualCost - b.paidPerJob) * b.jobsThisMonth, 0))}
+            </tbody>
+          </table>
+        </div>
+
+        {selectedBrand && (
+          <BrandDrillDown
+            brand={selectedBrand}
+            onClose={() => setSelectedBrand(null)}
+            onRenegotiate={(b) => { setSelectedBrand(null); setRenegBrand(b) }}
+          />
+        )}
+      </div>
+
+      {/* ── Bottom row ─────────────────────────────────────────────────────────── */}
+      <SectionLabel>Alerts & Leaderboards</SectionLabel>
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+        {/* Renegotiation needed */}
+        <div className="lg:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-amber-100 flex items-center justify-between" style={{ background: 'linear-gradient(90deg, #fffbeb, #fff)' }}>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-amber-800">Renegotiation Needed</h2>
+                <p className="text-xs text-amber-600">
+                  {lossBrands.length} brand{lossBrands.length !== 1 ? 's' : ''} paying below actual service cost
                 </p>
               </div>
             </div>
           </div>
-
-          {/* SLA breach leaderboard */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-card overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100" style={{ background: 'linear-gradient(90deg, #eff6ff, #fff)' }}>
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🚨</span>
-                <h2 className="text-base font-bold text-gray-900">SLA Breach Leaders</h2>
-              </div>
-              <p className="text-xs text-gray-500 mt-0.5">Top 5 brands by breach count this month</p>
-            </div>
-            <div className="p-5 flex flex-col gap-3">
-              {slaTop5.map((b, idx) => {
-                const rankColors = ['#ef4444', '#f97316', '#f59e0b', '#6b7280', '#9ca3af']
-                const rankBg     = ['bg-red-50', 'bg-orange-50', 'bg-amber-50', 'bg-gray-50', 'bg-gray-50']
-                return (
-                  <div key={b.id} className={`flex items-center gap-3 p-3 rounded-xl ${rankBg[idx]}`}>
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-extrabold shrink-0"
-                      style={{ background: rankColors[idx] }}>{idx + 1}</div>
-                    <span className="text-xl leading-none shrink-0">{b.logo}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{b.name}</p>
-                      <p className="text-xs text-gray-500">{b.category}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <span className="text-sm font-extrabold px-2.5 py-1 rounded-full"
-                        style={{ background: rankColors[idx] + '20', color: rankColors[idx] }}>
-                        {b.slaBreaches}
-                      </span>
-                      <p className="text-[10px] text-gray-400 mt-0.5">breaches</p>
+          <div className="p-5 flex flex-col gap-3">
+            {lossBrands.sort((a, b) => (a.paidPerJob - a.actualCost) - (b.paidPerJob - b.actualCost)).map(b => {
+              const lossPerJob = b.actualCost - b.paidPerJob
+              const totalLoss  = lossPerJob * b.jobsThisMonth
+              return (
+                <div key={b.id} className="flex items-center gap-4 p-4 rounded-xl border border-red-100" style={{ background: '#fff5f5' }}>
+                  <BrandInitial brand={b} size="lg" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-900 text-sm">{b.name}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{b.category}</p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
+                      <span className="text-xs text-gray-600">Paid <strong className="text-gray-800">₹{b.paidPerJob}</strong></span>
+                      <span className="text-xs text-gray-600">Cost <strong className="text-gray-800">₹{b.actualCost}</strong></span>
                     </div>
                   </div>
-                )
-              })}
-              <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-1">
-                <p className="text-xs text-gray-500 font-medium">All brands combined</p>
-                <span className="text-sm font-extrabold text-red-600">{totalBreaches} breaches</span>
-              </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xs text-gray-500 mb-1">Loss / job</p>
+                    <p className="text-lg font-extrabold text-red-600">−₹{fmt(lossPerJob)}</p>
+                    <p className="text-xs text-red-500 font-semibold mt-0.5">−{fmtCrore(totalLoss)} / month</p>
+                    <button
+                      onClick={() => setRenegBrand(b)}
+                      className="mt-2 text-[11px] font-bold px-3 py-1.5 rounded-lg text-white transition hover:opacity-90"
+                      style={{ background: '#13347b' }}
+                    >
+                      Renegotiate →
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+            <div className="flex items-center justify-between p-4 rounded-xl mt-1"
+              style={{ background: 'linear-gradient(90deg, #fef2f2, #fff5f5)', border: '1px solid #fecaca' }}>
+              <p className="text-sm font-bold text-red-800">Total monthly loss on loss-making brands</p>
+              <p className="text-xl font-extrabold text-red-700">
+                −{fmtCrore(lossBrands.reduce((s, b) => s + (b.actualCost - b.paidPerJob) * b.jobsThisMonth, 0))}
+              </p>
             </div>
           </div>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-10">
-          Brand Ops · resQ by Reliance · Data as of Oct 2026
-        </p>
+        {/* SLA breach leaderboard */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2.5" style={{ background: 'linear-gradient(90deg, #eff6ff, #fff)' }}>
+            <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-gray-900">SLA Breach Leaders</h2>
+              <p className="text-xs text-gray-500">Top 5 brands by breach count this month</p>
+            </div>
+          </div>
+          <div className="p-5 flex flex-col gap-3">
+            {slaTop5.map((b, idx) => {
+              const rankColors = ['#ef4444', '#f97316', '#f59e0b', '#6b7280', '#9ca3af']
+              const rankBg     = ['bg-red-50', 'bg-orange-50', 'bg-amber-50', 'bg-gray-50', 'bg-gray-50']
+              return (
+                <div key={b.id} className={`flex items-center gap-3 p-3 rounded-xl ${rankBg[idx]}`}>
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-extrabold shrink-0"
+                    style={{ background: rankColors[idx] }}>{idx + 1}</div>
+                  <BrandInitial brand={b} size="sm" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{b.name}</p>
+                    <p className="text-xs text-gray-500">{b.category}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-sm font-extrabold px-2.5 py-1 rounded-full"
+                      style={{ background: rankColors[idx] + '20', color: rankColors[idx] }}>
+                      {b.slaBreaches}
+                    </span>
+                    <p className="text-[10px] text-gray-400 mt-0.5">breaches</p>
+                  </div>
+                </div>
+              )
+            })}
+            <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-1">
+              <p className="text-xs text-gray-500 font-medium">All brands combined</p>
+              <span className="text-sm font-extrabold text-red-600">{totalBreaches} breaches</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+
+      <p className="text-center text-xs text-gray-400 mt-10 pb-2">
+        Brand Ops · resQ by Reliance · Data as of Oct 2026
+      </p>
+    </OpsShell>
   )
 }
