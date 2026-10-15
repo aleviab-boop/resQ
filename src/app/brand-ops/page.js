@@ -33,7 +33,20 @@ const npsColor = (nps) =>
 const plColor = (val) =>
   val > 0 ? 'text-emerald-600 font-bold' : val < 0 ? 'text-red-600 font-bold' : 'text-gray-500'
 
-// ─── Brand initial circle ──────────────────────────────────────────────────────
+// ─── Brand logo / initial circle ──────────────────────────────────────────────
+const BRAND_LOGOS = {
+  B001: null,                                          // Reliance — use initial
+  B002: 'https://logo.clearbit.com/sony.com',
+  B003: 'https://logo.clearbit.com/lg.com',
+  B004: 'https://logo.clearbit.com/samsung.com',
+  B005: 'https://logo.clearbit.com/daikin.com',
+  B006: 'https://logo.clearbit.com/whirlpool.com',
+  B007: 'https://logo.clearbit.com/bosch.com',
+  B008: 'https://logo.clearbit.com/ifbappliances.com',
+  B009: 'https://logo.clearbit.com/voltas.com',
+  B010: 'https://logo.clearbit.com/godrej.com',
+}
+
 const BRAND_PALETTE = [
   { bg: '#e0f2fe', color: '#0369a1' },
   { bg: '#fce7f3', color: '#9d174d' },
@@ -48,10 +61,30 @@ const BRAND_PALETTE = [
 ]
 
 function BrandInitial({ brand, size = 'sm' }) {
+  const [imgErr, setImgErr] = useState(false)
+  const logoUrl = BRAND_LOGOS[brand.id]
   const idx = parseInt(brand.id.replace('B', ''), 10) % BRAND_PALETTE.length
   const { bg, color } = BRAND_PALETTE[idx]
   const dim = size === 'lg' ? 40 : size === 'md' ? 32 : 24
   const font = size === 'lg' ? 15 : size === 'md' ? 12 : 10
+  const pad = size === 'lg' ? 7 : size === 'md' ? 6 : 4
+
+  if (logoUrl && !imgErr) {
+    return (
+      <div
+        className="rounded-xl shrink-0 bg-white border border-gray-100 flex items-center justify-center overflow-hidden"
+        style={{ width: dim, height: dim }}
+      >
+        <img
+          src={logoUrl}
+          alt={brand.name}
+          onError={() => setImgErr(true)}
+          style={{ width: dim - pad, height: dim - pad, objectFit: 'contain' }}
+        />
+      </div>
+    )
+  }
+
   return (
     <div
       className="rounded-xl flex items-center justify-center font-extrabold shrink-0"
