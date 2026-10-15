@@ -62,75 +62,135 @@ function BrandInitial({ brand, size = 'sm' }) {
   )
 }
 
-// ─── Improved Paid vs Cost Chart ───────────────────────────────────────────────
-const CHART_MAX = Math.max(...BRANDS.filter(b => !b.isOwnBrand).flatMap(b => [b.paidPerJob, b.actualCost])) * 1.08
+// ─── Bar Chart ────────────────────────────────────────────────────────────────
+const CHART_MAX = Math.max(...BRANDS.filter(b => !b.isOwnBrand).flatMap(b => [b.paidPerJob, b.actualCost])) * 1.12
 
 function BrandBar({ brand, onRenegotiate }) {
-  const isLoss    = brand.actualCost > brand.paidPerJob
-  const gap       = Math.abs(brand.paidPerJob - brand.actualCost)
-  const paidPct   = (brand.paidPerJob / CHART_MAX) * 100
-  const costPct   = (brand.actualCost  / CHART_MAX) * 100
-  const minPct    = Math.min(paidPct, costPct)
-  const gapStart  = minPct
-  const gapWidth  = Math.abs(paidPct - costPct)
+  const [hovered, setHovered] = useState(false)
+  const isLoss   = brand.actualCost > brand.paidPerJob
+  const gap      = Math.abs(brand.paidPerJob - brand.actualCost)
+  const paidPct  = (brand.paidPerJob / CHART_MAX) * 100
+  const costPct  = (brand.actualCost  / CHART_MAX) * 100
+  const minPct   = Math.min(paidPct, costPct)
+  const gapWidth = Math.abs(paidPct - costPct)
+
+  const paidGrad  = 'linear-gradient(90deg,#38bdf8 0%,#0ea5e9 60%,#00a1e1 100%)'
+  const costGrad  = isLoss
+    ? 'linear-gradient(90deg,#fca5a5 0%,#f87171 60%,#ef4444 100%)'
+    : 'linear-gradient(90deg,#6ee7b7 0%,#34d399 60%,#10b981 100%)'
 
   return (
-    <div className="py-3.5 border-b border-gray-100 last:border-0 group">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="w-28 shrink-0 flex items-center gap-2">
+    <div
+      className="py-5 border-b border-gray-100 last:border-0 transition-colors"
+      style={{ background: hovered ? '#f7f9ff' : 'transparent' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div className="flex items-center gap-4">
+
+        {/* Brand label */}
+        <div className="w-32 shrink-0 flex items-center gap-2.5">
           <BrandInitial brand={brand} size="md" />
           <div>
-            <p className="text-xs font-bold text-gray-800">{brand.name}</p>
-            <p className="text-[10px] text-gray-400">{brand.category}</p>
+            <p className="text-xs font-bold text-gray-800 leading-tight">{brand.name}</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">{brand.category}</p>
           </div>
         </div>
-        <div className="flex-1 relative">
-          {/* Axis background tracks */}
-          <div className="relative h-10 flex flex-col justify-between py-0.5">
-            {/* Paid bar */}
-            <div className="flex items-center gap-2 h-4">
+
+        {/* Chart bars */}
+        <div className="flex-1 flex flex-col gap-2 relative">
+
+          {/* Paid rate bar */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-7 rounded-full overflow-hidden" style={{ background: '#e8f4fd' }}>
               <div
-                className="h-4 rounded-r-full transition-all relative overflow-hidden"
-                style={{ width: `${paidPct}%`, background: '#00a1e1' }}
+                className="h-full rounded-full relative overflow-hidden transition-all duration-500"
+                style={{ width: `${paidPct}%`, background: paidGrad }}
               >
-                <div className="absolute inset-0 bg-white/10" />
+                {/* Sheen */}
+                <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
+                {/* Inline label for long bars */}
+                {paidPct > 40 && (
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-extrabold text-white/90 whitespace-nowrap">
+                    ₹{brand.paidPerJob}
+                  </span>
+                )}
               </div>
-              <span className="text-[11px] font-bold text-gray-700 whitespace-nowrap">₹{brand.paidPerJob}</span>
             </div>
-            {/* Cost bar */}
-            <div className="flex items-center gap-2 h-4">
-              <div
-                className="h-4 rounded-r-full transition-all relative overflow-hidden"
-                style={{ width: `${costPct}%`, background: isLoss ? '#ef4444' : '#10b981' }}
-              >
-                <div className="absolute inset-0 bg-white/10" />
-              </div>
-              <span className="text-[11px] font-bold text-gray-700 whitespace-nowrap">₹{brand.actualCost}</span>
-            </div>
+            {paidPct <= 40 && (
+              <span className="text-[11px] font-bold text-gray-500 w-12 text-right shrink-0">₹{brand.paidPerJob}</span>
+            )}
+            {paidPct > 40 && <span className="w-12 shrink-0" />}
           </div>
-          {/* Gap highlight band */}
+
+          {/* Actual cost bar */}
+          <div className="flex items-center gap-3">
+            <div
+              className="flex-1 h-7 rounded-full overflow-hidden"
+              style={{ background: isLoss ? '#fef2f2' : '#f0fdf4' }}
+            >
+              <div
+                className="h-full rounded-full relative overflow-hidden transition-all duration-500"
+                style={{ width: `${costPct}%`, background: costGrad }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
+                {costPct > 40 && (
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-extrabold text-white/90 whitespace-nowrap">
+                    ₹{brand.actualCost}
+                  </span>
+                )}
+              </div>
+            </div>
+            {costPct <= 40 && (
+              <span className="text-[11px] font-bold text-gray-500 w-12 text-right shrink-0">₹{brand.actualCost}</span>
+            )}
+            {costPct > 40 && <span className="w-12 shrink-0" />}
+          </div>
+
+          {/* Gap zone overlay */}
           <div
-            className="absolute top-0 bottom-0 opacity-10 pointer-events-none rounded"
-            style={{
-              left:  `${gapStart}%`,
-              width: `${gapWidth}%`,
-              background: isLoss ? '#ef4444' : '#10b981',
-            }}
-          />
+            className="absolute top-0 bottom-0 pointer-events-none"
+            style={{ left: `${minPct}%`, width: `${gapWidth}%` }}
+          >
+            <div
+              className="absolute inset-0 rounded-sm"
+              style={{
+                background: isLoss
+                  ? 'repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(239,68,68,0.12) 3px,rgba(239,68,68,0.12) 6px)'
+                  : 'repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(16,185,129,0.12) 3px,rgba(16,185,129,0.12) 6px)',
+              }}
+            />
+            {/* Gap bracket line */}
+            <div
+              className="absolute left-0 right-0 border-t-2 border-dashed"
+              style={{
+                top: '50%',
+                borderColor: isLoss ? '#fca5a5' : '#6ee7b7',
+              }}
+            />
+          </div>
         </div>
-        {/* Right: P&L + action */}
-        <div className="w-36 shrink-0 flex flex-col items-end gap-1">
-          <span className={`text-sm font-extrabold ${isLoss ? 'text-red-600' : 'text-emerald-600'}`}>
-            {isLoss ? '−' : '+'}₹{fmt(gap)}/job
-          </span>
+
+        {/* P&L summary */}
+        <div className="w-32 shrink-0 flex flex-col items-end gap-1">
+          <div className={`inline-flex items-baseline gap-1 px-2.5 py-1 rounded-lg text-sm font-extrabold ${
+            isLoss ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'
+          }`}>
+            {isLoss ? '−' : '+'}₹{fmt(gap)}
+            <span className="text-[9px] font-semibold opacity-70">/job</span>
+          </div>
           <span className={`text-[11px] font-semibold ${isLoss ? 'text-red-400' : 'text-emerald-400'}`}>
             {isLoss ? '−' : '+'}{fmtCrore(Math.abs(gap * brand.jobsThisMonth))}/mo
           </span>
           {isLoss && (
             <button
               onClick={() => onRenegotiate(brand)}
-              className="mt-0.5 text-[10px] font-bold px-2.5 py-1 rounded-lg text-white opacity-0 group-hover:opacity-100 transition-all"
-              style={{ background: '#13347b' }}
+              className="mt-1 text-[10px] font-bold px-2.5 py-1.5 rounded-lg text-white transition-all"
+              style={{
+                background: '#13347b',
+                opacity: hovered ? 1 : 0,
+                transform: hovered ? 'translateY(0)' : 'translateY(4px)',
+              }}
             >
               Renegotiate →
             </button>
@@ -832,43 +892,46 @@ export default function BrandOpsPage() {
       {/* ── Chart section ──────────────────────────────────────────────────────── */}
       <SectionLabel>Paid Rate vs Actual Cost — per Job</SectionLabel>
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
-          <p className="text-xs text-gray-500">Third-party brands only · sorted by margin (best to worst) · hover for action</p>
-          <div className="flex items-center gap-5 text-xs font-medium">
-            <span className="flex items-center gap-1.5">
-              <span className="w-10 h-2.5 rounded-full inline-block" style={{ background: '#00a1e1' }} />
-              Paid rate
+        {/* Header row */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+          <p className="text-xs text-gray-400">Third-party brands · sorted by margin · hover a row for action</p>
+          <div className="flex items-center gap-4 text-xs font-semibold">
+            <span className="flex items-center gap-2">
+              <span className="inline-block w-8 h-3.5 rounded-full" style={{ background: 'linear-gradient(90deg,#38bdf8,#00a1e1)' }} />
+              <span className="text-gray-600">Paid rate</span>
             </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-10 h-2.5 rounded-full inline-block bg-red-400" />
-              Cost (loss)
+            <span className="flex items-center gap-2">
+              <span className="inline-block w-8 h-3.5 rounded-full" style={{ background: 'linear-gradient(90deg,#fca5a5,#ef4444)' }} />
+              <span className="text-gray-600">Cost (loss)</span>
             </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-10 h-2.5 rounded-full inline-block bg-emerald-500" />
-              Cost (profit)
+            <span className="flex items-center gap-2">
+              <span className="inline-block w-8 h-3.5 rounded-full" style={{ background: 'linear-gradient(90deg,#6ee7b7,#10b981)' }} />
+              <span className="text-gray-600">Cost (profit)</span>
+            </span>
+            <span className="flex items-center gap-2 text-gray-400">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12M8 12h12M8 17h12M3 7h.01M3 12h.01M3 17h.01" />
+              </svg>
+              Gap zone hatched
             </span>
           </div>
         </div>
 
-        {/* Scale labels */}
-        <div className="flex ml-28 sm:ml-36 mb-1">
+        {/* Scale row */}
+        <div className="flex mb-1 ml-36 mr-44">
           {[0, 25, 50, 75, 100].map(pct => (
-            <div key={pct} className="flex-1 text-right">
-              <span className="text-[10px] text-gray-300 font-medium">
+            <div key={pct} style={{ left: `${pct}%`, position: 'absolute' }} />
+          ))}
+          {[0, 25, 50, 75, 100].map(pct => (
+            <div key={pct} className="flex-1 text-center">
+              <span className="text-[10px] text-gray-300 font-medium tabular-nums">
                 ₹{Math.round((CHART_MAX * pct) / 100 / 50) * 50}
               </span>
             </div>
           ))}
         </div>
-        <div className="relative ml-28 sm:ml-36 mr-36 mb-1 h-px">
-          <div className="absolute inset-0 flex">
-            {[0, 25, 50, 75, 100].map(pct => (
-              <div key={pct} className="flex-1 border-r border-gray-100 last:border-0" />
-            ))}
-          </div>
-        </div>
 
-        <div className="divide-y divide-gray-50">
+        <div className="divide-y divide-transparent">
           {chartBrands.map(b => <BrandBar key={b.id} brand={b} onRenegotiate={setRenegBrand} />)}
         </div>
       </div>
