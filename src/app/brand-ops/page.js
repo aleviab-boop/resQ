@@ -34,42 +34,45 @@ const plColor = (val) =>
   val > 0 ? 'text-emerald-600 font-bold' : val < 0 ? 'text-red-600 font-bold' : 'text-gray-500'
 
 // ─── Brand logo / initial circle ──────────────────────────────────────────────
-// Google favicon service — reliable, CDN-backed, no API key needed
-const FAV = (d) => `https://www.google.com/s2/favicons?sz=128&domain_url=${d}`
+// Simple Icons CDN (SVG, no API key) for major global brands
+// Google favicon fallback for regional/Indian brands
+const SI  = (slug) => `https://cdn.simpleicons.org/${slug}`
+const FAV = (d)    => `https://www.google.com/s2/favicons?sz=128&domain_url=${d}`
+
 const BRAND_LOGOS = {
-  B001: null,                                    // Reliance — keep branded initial
-  B002: FAV('sony.com'),
-  B003: FAV('lg.com'),
-  B004: FAV('samsung.com'),
-  B005: FAV('daikin.com'),
-  B006: FAV('whirlpool.com'),
-  B007: FAV('bosch.com'),
-  B008: FAV('ifbappliances.com'),
+  B001: null,                      // Reliance — branded initial
+  B002: SI('sony'),
+  B003: SI('lg'),
+  B004: SI('samsung'),
+  B005: FAV('daikinindia.com'),
+  B006: SI('whirlpool'),
+  B007: SI('bosch'),
+  B008: FAV('ifb.in'),
   B009: FAV('voltas.com'),
   B010: FAV('godrej.com'),
 }
 
-const BRAND_PALETTE = [
-  { bg: '#e0f2fe', color: '#0369a1' },
-  { bg: '#fce7f3', color: '#9d174d' },
-  { bg: '#dcfce7', color: '#166534' },
-  { bg: '#fef3c7', color: '#92400e' },
-  { bg: '#ede9fe', color: '#6d28d9' },
-  { bg: '#ffedd5', color: '#9a3412' },
-  { bg: '#dbeafe', color: '#1e40af' },
-  { bg: '#f0fdf4', color: '#15803d' },
-  { bg: '#fdf4ff', color: '#7e22ce' },
-  { bg: '#fff1f2', color: '#9f1239' },
-]
+// Actual brand colors used as fallback initials
+const BRAND_PALETTE = {
+  B001: { bg: '#13347b', color: '#fff', abbr: 'R'   },
+  B002: { bg: '#000000', color: '#fff', abbr: 'S'   },
+  B003: { bg: '#a50034', color: '#fff', abbr: 'LG'  },
+  B004: { bg: '#1428A0', color: '#fff', abbr: 'S'   },
+  B005: { bg: '#016db5', color: '#fff', abbr: 'D'   },
+  B006: { bg: '#00529b', color: '#fff', abbr: 'W'   },
+  B007: { bg: '#cc0000', color: '#fff', abbr: 'B'   },
+  B008: { bg: '#ed1c24', color: '#fff', abbr: 'IFB' },
+  B009: { bg: '#e7243a', color: '#fff', abbr: 'V'   },
+  B010: { bg: '#007bc0', color: '#fff', abbr: 'G'   },
+}
 
 function BrandInitial({ brand, size = 'sm' }) {
   const [imgErr, setImgErr] = useState(false)
   const logoUrl = BRAND_LOGOS[brand.id]
-  const idx = parseInt(brand.id.replace('B', ''), 10) % BRAND_PALETTE.length
-  const { bg, color } = BRAND_PALETTE[idx]
-  const dim = size === 'lg' ? 40 : size === 'md' ? 32 : 24
-  const font = size === 'lg' ? 15 : size === 'md' ? 12 : 10
-  const pad = size === 'lg' ? 7 : size === 'md' ? 6 : 4
+  const { bg, color, abbr } = BRAND_PALETTE[brand.id] ?? { bg: '#64748b', color: '#fff', abbr: brand.name[0] }
+  const dim  = size === 'lg' ? 40 : size === 'md' ? 32 : 24
+  const font = size === 'lg' ? 10 : size === 'md' ? 9  : 8
+  const pad  = size === 'lg' ? 7  : size === 'md' ? 6  : 4
 
   if (logoUrl && !imgErr) {
     return (
@@ -87,12 +90,13 @@ function BrandInitial({ brand, size = 'sm' }) {
     )
   }
 
+  // Branded-color fallback — looks intentional, not broken
   return (
     <div
-      className="rounded-xl flex items-center justify-center font-extrabold shrink-0"
+      className="rounded-xl flex items-center justify-center font-extrabold shrink-0 tracking-tight"
       style={{ width: dim, height: dim, background: bg, color, fontSize: font }}
     >
-      {brand.name[0]}
+      {abbr}
     </div>
   )
 }
