@@ -57,3 +57,7 @@ The customer-facing routes live at the top level (`/`, `/all-services`, `/track`
 ## Deployment
 
 Deployed on Vercel. Pushes to `main` trigger a production deployment automatically.
+
+## Development workflow
+
+Changes are made in the local clone, verified with `npm run build`, and pushed directly to `main`. Each push to `main` is deployed to production by Vercel within about a minute.
